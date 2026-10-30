@@ -23,7 +23,7 @@ if [ ! -f ".env" ]; then
 fi
 
 echo "🧪 Running automated pytest suite..."
-pytest -v
+PYTHONPATH=. python -m pytest -v
 
 echo "🚀 Starting Candy or Curse FastAPI Backend on http://0.0.0.0:8000 ..."
 echo "👉 Interactive Swagger UI: http://localhost:8000/docs"
