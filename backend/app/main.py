@@ -1,10 +1,12 @@
 """Candy or Curse? — FastAPI Main Application (Developer B2)."""
 import base64
+from pathlib import Path
 import re
 from typing import Any, Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from app.config import settings
 from app.models.schemas import (
@@ -46,6 +48,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+FRONTEND_DIST_HTML = (
+    Path(__file__).resolve().parent.parent.parent / "frontend" / "dist" / "index.html"
+)
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/scan/{session_id}", response_class=HTMLResponse, include_in_schema=False)
+async def serve_frontend_ui(session_id: Optional[str] = None) -> HTMLResponse:
+    """Serve the interactive Candy or Curse web UI directly on '/' and '/scan/{session_id}'."""
+    if FRONTEND_DIST_HTML.exists():
+        return HTMLResponse(FRONTEND_DIST_HTML.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Candy or Curse API is running. Visit <a href='/docs'>/docs</a></h1>")
 
 
 @app.get("/api/health", tags=["System"])

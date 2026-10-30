@@ -1,10 +1,10 @@
 /**
- * Mobile Food & Candy Scanner (`/scan/:sessionId`)
+ * Mobile Food & Candy Scanner (`/scan/:sessionId`) — Developer A1
  * Supports:
  * 1. Live Stream Mode with conversational ElevenLabs feedback ("Okay, turn it around. Let me see the ingredients.")
  * 2. Front-of-pack OR Back-of-pack (Ingredient Label OCR) photo capture
- * 3. Direct Ingredient List text input for 100% accuracy
- * 4. Recommended Alternatives when a product is not recommended (RED)
+ * 3. Direct Ingredient List text input (German & English)
+ * 4. Clickable Recommended Alternatives when a product is RED
  */
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
@@ -36,7 +36,7 @@ export const MobileScanner: React.FC = () => {
       }
     } catch {
       alert(
-        "Camera preview requires HTTPS or permission. Use the 'Take Photo' or 'Ingredient Text' input below!"
+        "Camera preview requires HTTPS or permission. Use the 'Take Photo' button or 'Ingredient List' box below!"
       );
     }
   };
@@ -53,7 +53,6 @@ export const MobileScanner: React.FC = () => {
     await submitScan(dataUrl);
   };
 
-  // Continuous Live Stream Mode: grabs a frame every 4 seconds and speaks back naturally
   useEffect(() => {
     if (!liveStreamMode || !cameraActive) return;
     const interval = window.setInterval(() => {
@@ -91,66 +90,73 @@ export const MobileScanner: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0714] p-4 text-amber-50">
-      <header className="flex items-center justify-between border-b border-orange-500/30 pb-3">
+    <div className="min-h-screen bg-gradient-to-b from-[#17092b] via-[#0c0714] to-black p-4 text-amber-50">
+      <header className="mx-auto flex max-w-lg items-center justify-between border-b border-orange-500/30 pb-3">
         <div>
           <h1 className="text-xl font-black text-orange-400">
             🎃 Live Food &amp; Candy Scanner
           </h1>
-          <p className="text-xs text-amber-200/70">Session: {sessionId}</p>
+          <p className="text-xs font-mono text-amber-200/70">Session: {sessionId}</p>
         </div>
         <Link
           to="/"
-          className="rounded-lg border border-white/20 px-3 py-1 text-xs text-amber-200"
+          className="rounded-xl border border-orange-400/40 bg-orange-500/20 px-3 py-1.5 text-xs font-bold text-orange-200"
         >
-          Desktop View
+          ← Desktop Station
         </Link>
       </header>
 
-      {/* Active Restrictions Banner */}
-      {session && (
-        <div className="mt-3 rounded-xl border border-orange-500/30 bg-orange-950/30 p-3">
-          <p className="text-[11px] font-bold uppercase text-orange-300">
-            Active Preferences &amp; Allergies:
-          </p>
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {session.dietary_profile.parsed_restrictions.map((r) => (
-              <span
-                key={r}
-                className="rounded-full bg-orange-500/20 px-2.5 py-0.5 text-xs font-bold text-orange-200"
-              >
-                {r.replace("_", " ")}
-              </span>
-            ))}
+      <div className="mx-auto mt-3 max-w-lg space-y-4">
+        {/* Active Restrictions Banner */}
+        {session && (
+          <div className="rounded-2xl border border-orange-500/30 bg-orange-950/30 p-3">
+            <p className="text-[11px] font-extrabold uppercase tracking-wider text-orange-300">
+              Checking Against Your Profile:
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {session.dietary_profile.parsed_restrictions.map((r) => (
+                <span
+                  key={r}
+                  className="rounded-full bg-orange-500/25 border border-orange-400/40 px-2.5 py-0.5 text-xs font-bold text-orange-200"
+                >
+                  {r === "eat_everything" ? "✅ Eat Everything" : `⚠️ ${r.replace(/_/g, " ")}`}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Camera / Live Stream / Ingredient Input Controls */}
-      <div className="mt-4 space-y-4">
         {scanResult ? (
           <ClassificationOverlay
             result={scanResult}
             onDismiss={() => setScanResult(null)}
+            onSelectAlternative={(prodId) => void submitScan("dGVzdA==", prodId)}
           />
         ) : (
-          <div className="rounded-2xl border border-purple-500/40 bg-purple-950/30 p-4 text-center">
-            <video
-              ref={videoRef}
-              playsInline
-              muted
-              className={`mx-auto w-full max-w-sm rounded-xl bg-black ${
-                cameraActive ? "block" : "hidden"
-              }`}
-            />
+          <div className="rounded-3xl border border-purple-500/40 bg-purple-950/30 p-4 text-center shadow-2xl">
+            <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl">
+              <video
+                ref={videoRef}
+                playsInline
+                muted
+                className={`w-full rounded-2xl bg-black ${
+                  cameraActive ? "block" : "hidden"
+                }`}
+              />
+              {cameraActive && (
+                <div className="pointer-events-none absolute inset-0 border-2 border-orange-400/60 rounded-2xl">
+                  <div className="w-full h-0.5 bg-orange-400 shadow-[0_0_12px_#f97316] animate-bounce" />
+                </div>
+              )}
+            </div>
 
             {!cameraActive ? (
               <button
                 type="button"
                 onClick={() => void startCamera()}
-                className="w-full rounded-xl bg-purple-700 py-3 text-sm font-bold text-white hover:bg-purple-600"
+                className="w-full rounded-2xl bg-gradient-to-r from-purple-700 to-indigo-700 py-3.5 text-sm font-black text-white shadow-lg hover:from-purple-600 hover:to-indigo-600"
               >
-                📷 Start Smartphone Camera (Front of Product or Ingredient List)
+                📷 Start Live Camera (Front or Ingredient Label)
               </button>
             ) : (
               <div className="mt-3 space-y-2">
@@ -158,31 +164,31 @@ export const MobileScanner: React.FC = () => {
                   type="button"
                   disabled={scanning}
                   onClick={() => void captureSnapshot()}
-                  className="w-full rounded-xl bg-orange-500 py-3 text-base font-black text-black"
+                  className="w-full rounded-2xl bg-orange-500 py-3.5 text-base font-black text-black shadow-lg"
                 >
                   {scanning
-                    ? "🔮 Analyzing Frame..."
-                    : "📸 Snap Front OR Back Ingredient Label"}
+                    ? "🔮 Gemma 4 Analyzing..."
+                    : "📸 Snap Front OR Back Ingredient List"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setLiveStreamMode((prev) => !prev)}
-                  className={`w-full rounded-xl py-2.5 text-xs font-bold ${
+                  className={`w-full rounded-2xl py-2.5 text-xs font-extrabold ${
                     liveStreamMode
                       ? "animate-pulse bg-rose-600 text-white"
                       : "bg-white/10 text-amber-200 hover:bg-white/20"
                   }`}
                 >
                   {liveStreamMode
-                    ? "🔴 Live Stream Mode ON (AI Coach Talking Back)"
-                    : "▶️ Enable Continuous Live Stream & Voice Coach"}
+                    ? "🔴 Live Stream ON — AI Coach Speaking Back"
+                    : "▶️ Turn On Continuous Live Stream & Voice Coach"}
                 </button>
               </div>
             )}
 
             {/* Native Mobile Camera / File Input */}
-            <label className="mt-3 block cursor-pointer rounded-xl border-2 border-dashed border-orange-400/50 bg-orange-500/10 py-3.5 text-sm font-bold text-orange-300 hover:bg-orange-500/20">
-              {scanning ? "🔮 Reading Label..." : "📁 Take Photo (Front or Ingredient List)"}
+            <label className="mt-3 block cursor-pointer rounded-2xl border-2 border-dashed border-orange-400/50 bg-orange-500/10 py-3.5 text-sm font-extrabold text-orange-300 hover:bg-orange-500/20">
+              {scanning ? "🔮 Reading Package..." : "📁 Take Photo / Upload Food Picture"}
               <input
                 type="file"
                 accept="image/*"
@@ -192,18 +198,18 @@ export const MobileScanner: React.FC = () => {
               />
             </label>
 
-            {/* Direct Ingredient List Input (for 100% accuracy on any food product) */}
-            <div className="mt-4 rounded-xl border border-purple-400/30 bg-black/40 p-3 text-left">
-              <label className="block text-xs font-bold uppercase tracking-wider text-purple-300">
-                📝 Or Paste / Type Ingredient List Directly:
+            {/* Direct Ingredient List Input (German or English) */}
+            <div className="mt-4 rounded-2xl border border-purple-400/30 bg-black/45 p-3.5 text-left">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-purple-300">
+                📝 Or Paste / Type Ingredient List (DE / EN):
               </label>
               <div className="mt-2 flex gap-2">
                 <input
                   type="text"
                   value={ingredientText}
                   onChange={(e) => setIngredientText(e.target.value)}
-                  placeholder="e.g. Water, Sugar, Citric Acid, Pork Gelatin..."
-                  className="flex-1 rounded-lg border border-white/20 bg-black/60 px-3 py-2 text-xs text-white"
+                  placeholder="e.g. Zutaten: Zucker, Schweinegelatine, Erdnüsse..."
+                  className="flex-1 rounded-xl border border-white/20 bg-black/60 px-3 py-2 text-xs text-white"
                 />
                 <button
                   type="button"
@@ -211,39 +217,46 @@ export const MobileScanner: React.FC = () => {
                   onClick={() =>
                     void submitScan(undefined, undefined, ingredientText)
                   }
-                  className="rounded-lg bg-purple-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-40"
+                  className="rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-black text-white disabled:opacity-40"
                 >
-                  Check Ingredients
+                  Check
                 </button>
               </div>
             </div>
 
-            {/* Quick Demo Triggers for Hackathon Presentation */}
+            {/* Quick Demo Triggers */}
             <div className="mt-5 border-t border-white/10 pt-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-200/70">
-                Quick Demo Scenarios:
+              <p className="text-xs font-extrabold uppercase tracking-wider text-amber-200/70">
+                ⚡ Test Any Product Scenario Instantly:
               </p>
-              <div className="mt-2 grid grid-cols-3 gap-2">
+              <div className="mt-2 grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => void submitScan("dGVzdA==", "capri-sun-multivitamin")}
-                  className="rounded-lg bg-emerald-600/30 border border-emerald-400/50 p-2 text-xs font-bold text-emerald-200"
+                  className="rounded-xl bg-emerald-600/30 border border-emerald-400/50 p-2.5 text-xs font-bold text-emerald-200"
                 >
                   🟢 Capri-Sun (OK)
                 </button>
                 <button
                   type="button"
                   onClick={() => void submitScan("dGVzdA==", "haribo-goldbears")}
-                  className="rounded-lg bg-rose-600/30 border border-rose-400/50 p-2 text-xs font-bold text-rose-200"
+                  className="rounded-xl bg-rose-600/30 border border-rose-400/50 p-2.5 text-xs font-bold text-rose-200"
                 >
                   🔴 Haribo (+Alts)
                 </button>
                 <button
                   type="button"
-                  onClick={() => void submitScan("dGVzdA==", "water-bottle-front")}
-                  className="rounded-lg bg-amber-600/30 border border-amber-400/50 p-2 text-xs font-bold text-amber-200"
+                  onClick={() => void submitScan("dGVzdA==", "nutella-original")}
+                  className="rounded-xl bg-rose-600/30 border border-rose-400/50 p-2.5 text-xs font-bold text-rose-200"
                 >
-                  🟡 &ldquo;Turn It Around!&rdquo;
+                  🔴 Nutella (Hazelnuts)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void submitScan("dGVzdA==", "water-bottle-front")}
+                  className="rounded-xl bg-amber-600/30 border border-amber-400/50 p-2.5 text-xs font-bold text-amber-200"
+                >
+                  🟡 Water Bottle (&ldquo;Turn Around!&rdquo;)
                 </button>
               </div>
             </div>
