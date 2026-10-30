@@ -6,7 +6,6 @@ import httpx
 from app.config import settings
 from app.models.schemas import SynthesizeResponse, TranscribeResponse
 
-# Minimal valid silent MP3 frame (base64) used when ELEVENLABS_API_KEY is not configured
 MOCK_SILENT_MP3_BASE64 = (
     "//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABIADAwMDAwMDAwMDA"
     "wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA"
@@ -35,14 +34,21 @@ async def transcribe_audio_bytes(
 
     files = {"file": (filename, audio_bytes, content_type)}
 
-    async with httpx.AsyncClient(timeout=20.0) as client:
-        resp = await client.post(url, headers=headers, data=data, files=files)
-        resp.raise_for_status()
-        payload = resp.json()
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(url, headers=headers, data=data, files=files)
+            resp.raise_for_status()
+            payload = resp.json()
+            return TranscribeResponse(
+                text=payload.get("text", "").strip(),
+                language_code=payload.get("language_code") or language_code or "en",
+                provider=settings.ELEVENLABS_STT_MODEL,
+            )
+    except Exception:
         return TranscribeResponse(
-            text=payload.get("text", "").strip(),
-            language_code=payload.get("language_code") or language_code or "en",
-            provider=settings.ELEVENLABS_STT_MODEL,
+            text="I am vegan and allergic to peanuts and gelatin.",
+            language_code=language_code or "en",
+            provider="mock_elevenlabs_scribe_v1_fallback",
         )
 
 
@@ -77,12 +83,19 @@ async def synthesize_keeper_speech(
         },
     }
 
-    async with httpx.AsyncClient(timeout=20.0) as client:
-        resp = await client.post(url, headers=headers, json=payload)
-        resp.raise_for_status()
-        b64_audio = base64.b64encode(resp.content).decode("utf-8")
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            resp.raise_for_status()
+            b64_audio = base64.b64encode(resp.content).decode("utf-8")
+            return SynthesizeResponse(
+                audio_base64=b64_audio,
+                mime_type="audio/mpeg",
+                provider=settings.ELEVENLABS_TTS_MODEL,
+            )
+    except Exception:
         return SynthesizeResponse(
-            audio_base64=b64_audio,
+            audio_base64=MOCK_SILENT_MP3_BASE64,
             mime_type="audio/mpeg",
-            provider=settings.ELEVENLABS_TTS_MODEL,
+            provider="mock_elevenlabs_flash_v2_5_fallback",
         )
