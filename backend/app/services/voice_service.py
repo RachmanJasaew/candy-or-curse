@@ -2,6 +2,7 @@
 import base64
 from typing import Optional
 import httpx
+from fastapi import HTTPException
 
 from app.config import settings
 from app.models.schemas import SynthesizeResponse, TranscribeResponse
@@ -20,11 +21,7 @@ async def transcribe_audio_bytes(
 ) -> TranscribeResponse:
     """Transcribe user speech using ElevenLabs Scribe (`POST /v1/speech-to-text`)."""
     if not settings.ELEVENLABS_API_KEY:
-        return TranscribeResponse(
-            text="I am vegan and allergic to peanuts and gelatin.",
-            language_code=language_code or "en",
-            provider="mock_elevenlabs_scribe_v1",
-        )
+        raise HTTPException(status_code=503, detail="Voice input is unavailable. Please type your message.")
 
     url = "https://api.elevenlabs.io/v1/speech-to-text"
     headers = {"xi-api-key": settings.ELEVENLABS_API_KEY}
@@ -39,17 +36,19 @@ async def transcribe_audio_bytes(
             resp = await client.post(url, headers=headers, data=data, files=files)
             resp.raise_for_status()
             payload = resp.json()
+            text = payload.get("text", "").strip()
+            if not text:
+                raise HTTPException(status_code=422, detail="No speech was detected. Please try again or type your message.")
             return TranscribeResponse(
-                text=payload.get("text", "").strip(),
+                text=text,
                 language_code=payload.get("language_code") or language_code or "en",
                 provider=settings.ELEVENLABS_STT_MODEL,
             )
+    except HTTPException:
+        raise
     except Exception:
-        return TranscribeResponse(
-            text="I am vegan and allergic to peanuts and gelatin.",
-            language_code=language_code or "en",
-            provider="mock_elevenlabs_scribe_v1_fallback",
-        )
+        raise HTTPException(status_code=502, detail="Voice transcription failed. Please try again or type your message.") from None
+
 
 
 async def synthesize_keeper_speech(

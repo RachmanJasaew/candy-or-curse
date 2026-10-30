@@ -43,5 +43,7 @@ jobs:
           node-version: "20"
       - name: Install dependencies
         run: npm install
+      - name: Served UI behavior tests
+        run: node --test tests/served-ui.test.cjs
       - name: TypeScript typecheck & build
         run: npm run build
