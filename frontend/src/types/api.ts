@@ -1,15 +1,20 @@
 /**
- * Shared TypeScript API Contract Models (`v1.0.0`)
+ * Shared TypeScript API Contract Models (`v1.1.0`)
  * Matches `docs/API_CONTRACT.md` and `backend/app/models/schemas.py`.
- * DO NOT modify field names without coordinating across Team A & Team B.
  */
 
 export type ClassificationStatus = "GREEN" | "RED" | "YELLOW";
 
-export type IdentificationStatus = "IDENTIFIED" | "AMBIGUOUS" | "UNKNOWN";
+export type IdentificationStatus =
+  | "IDENTIFIED"
+  | "NEEDS_INGREDIENT_LABEL"
+  | "AMBIGUOUS"
+  | "UNKNOWN";
 
 export type IngredientSource =
   | "VERIFIED_DATABASE"
+  | "PACKAGE_OCR"
+  | "USER_TEXT_INPUT"
   | "UNVERIFIED_FALLBACK"
   | "NONE";
 
@@ -35,6 +40,14 @@ export interface RecognizedProduct {
   visual_evidence: string;
 }
 
+export interface AlternativeProduct {
+  product_id: string;
+  name: string;
+  brand: string;
+  category: string;
+  reason: string;
+}
+
 export interface UncertaintyInfo {
   is_uncertain: boolean;
   confidence_score: number;
@@ -53,6 +66,9 @@ export interface ScanResult {
   conflicting_ingredients: string[];
   verified_ingredients: string[];
   allergen_warnings: string[];
+  recommended_alternatives: AlternativeProduct[];
+  needs_ingredient_photo: boolean;
+  agent_guidance_prompt: string | null;
   explanation: string;
   keeper_spoken_summary: string;
   uncertainty: UncertaintyInfo;
@@ -88,8 +104,10 @@ export interface ChatResponse {
 }
 
 export interface ScanBase64Request {
-  image_base64: string;
+  image_base64?: string;
   mime_type?: string;
+  ingredient_text_override?: string;
+  scan_mode?: "auto" | "front" | "ingredients" | "live_stream";
   demo_product_hint?: string;
 }
 

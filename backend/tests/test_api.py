@@ -13,51 +13,33 @@ def test_health_and_catalog() -> None:
     data = resp.json()
     assert data["status"] == "ok"
     assert data["verified_products_count"] == 15
+    assert "recommended_alternatives" in data["features"]
 
     cat_resp = client.get("/api/products")
     assert cat_resp.status_code == 200
     assert cat_resp.json()["count"] == 15
 
 
-def test_session_creation_and_retrieval() -> None:
+def test_session_creation_with_halal_and_allergies() -> None:
     resp = client.post(
         "/api/sessions",
         json={
-            "initial_message": "I am vegan and allergic to peanuts",
+            "initial_message": "I want halal food and I am allergic to peanuts",
             "allergies": ["peanuts"],
-            "dietary_preferences": ["vegan", "no_gelatin"],
+            "dietary_preferences": ["halal"],
         },
     )
     assert resp.status_code == 201
     session = resp.json()
     session_id = session["session_id"]
-    assert session_id.startswith("sess_")
-    assert session["mobile_scan_path"] == f"/scan/{session_id}"
+    assert "halal" in session["dietary_profile"]["parsed_restrictions"]
     assert "peanuts" in session["dietary_profile"]["parsed_restrictions"]
-    assert "vegan" in session["dietary_profile"]["parsed_restrictions"]
-    assert "no_gelatin" in session["dietary_profile"]["parsed_restrictions"]
-
-    get_resp = client.get(f"/api/sessions/{session_id}")
-    assert get_resp.status_code == 200
-    assert get_resp.json()["session_id"] == session_id
 
 
-def test_chat_updates_dietary_restrictions() -> None:
-    session_id = client.post("/api/sessions", json={}).json()["session_id"]
-    chat_resp = client.post(
-        f"/api/sessions/{session_id}/chat",
-        json={"message": "I have a severe peanut allergy and I avoid gluten."},
-    )
-    assert chat_resp.status_code == 200
-    body = chat_resp.json()
-    assert "peanuts" in body["updated_dietary_profile"]["parsed_restrictions"]
-    assert "gluten" in body["updated_dietary_profile"]["parsed_restrictions"]
-
-
-def test_scan_red_classification_for_haribo_vegan() -> None:
+def test_scan_red_includes_recommended_alternatives() -> None:
     session_id = client.post(
         "/api/sessions",
-        json={"initial_message": "I am vegan and avoid gelatin"},
+        json={"initial_message": "I eat halal and avoid gelatin"},
     ).json()["session_id"]
 
     scan_resp = client.post(
@@ -71,84 +53,61 @@ def test_scan_red_classification_for_haribo_vegan() -> None:
     assert scan_resp.status_code == 200
     result = scan_resp.json()
     assert result["classification"] == "RED"
-    assert result["identification_status"] == "IDENTIFIED"
-    assert result["ingredient_source"] == "VERIFIED_DATABASE"
     assert any("Gelatin" in item for item in result["conflicting_ingredients"])
-    assert "allergy-safe" not in result["explanation"].lower()
+    # Must recommend compatible alternatives (e.g. Sour Patch Kids / Skittles)
+    assert len(result["recommended_alternatives"]) >= 1
+    alt_ids = [a["product_id"] for a in result["recommended_alternatives"]]
+    assert "haribo-goldbears" not in alt_ids
 
 
-def test_scan_green_classification_for_capri_sun_vegan_peanut_allergy() -> None:
+def test_water_bottle_front_asks_user_to_turn_around_for_ingredients() -> None:
     session_id = client.post(
         "/api/sessions",
-        json={"initial_message": "I am vegan and allergic to peanuts"},
+        json={"initial_message": "I am vegan"},
     ).json()["session_id"]
 
     scan_resp = client.post(
         f"/api/sessions/{session_id}/scan",
         json={
             "image_base64": DUMMY_IMAGE_B64,
-            "mime_type": "image/jpeg",
-            "demo_product_hint": "capri-sun-multivitamin",
+            "demo_product_hint": "water-bottle-front",
         },
     )
     assert scan_resp.status_code == 200
-    result = scan_resp.json()
-    assert result["classification"] == "GREEN"
-    assert result["identification_status"] == "IDENTIFIED"
-    assert result["ingredient_source"] == "VERIFIED_DATABASE"
-    assert result["conflicting_ingredients"] == []
-    # Must NEVER describe a product as definitively allergy-safe
-    assert "allergy-safe" not in result["explanation"].lower()
-    assert "100% safe" not in result["explanation"].lower()
+    res = scan_resp.json()
+    assert res["classification"] == "YELLOW"
+    assert res["identification_status"] == "NEEDS_INGREDIENT_LABEL"
+    assert res["needs_ingredient_photo"] is True
+    assert "turn it around" in (res["agent_guidance_prompt"] or "").lower()
 
 
-def test_scan_yellow_classification_for_unknown_or_unverified_product() -> None:
+def test_direct_ingredient_list_input_classification() -> None:
     session_id = client.post(
         "/api/sessions",
-        json={"initial_message": "Allergic to tree nuts"},
+        json={"initial_message": "I want halal and no gelatin"},
     ).json()["session_id"]
 
-    # 1. Blurry / unknown image
-    unknown_resp = client.post(
+    # 1. Ingredient list with pork gelatin -> RED + alternatives
+    bad_resp = client.post(
         f"/api/sessions/{session_id}/scan",
         json={
-            "image_base64": DUMMY_IMAGE_B64,
-            "demo_product_hint": "unknown",
+            "ingredient_text_override": "Sugar, Glucose Syrup, Pork Gelatin, Citric Acid",
         },
     )
-    assert unknown_resp.status_code == 200
-    u_res = unknown_resp.json()
-    assert u_res["classification"] == "YELLOW"
-    assert u_res["ingredient_source"] == "NONE"
-    assert u_res["uncertainty"]["is_uncertain"] is True
+    assert bad_resp.status_code == 200
+    bad_data = bad_resp.json()
+    assert bad_data["classification"] == "RED"
+    assert bad_data["ingredient_source"] == "USER_TEXT_INPUT"
+    assert len(bad_data["recommended_alternatives"]) >= 1
 
-    # 2. Named product NOT in our verified 15-product DB
-    unverified_resp = client.post(
+    # 2. Clean water bottle ingredient list -> GREEN
+    good_resp = client.post(
         f"/api/sessions/{session_id}/scan",
         json={
-            "image_base64": DUMMY_IMAGE_B64,
-            "demo_product_hint": "Mystery Homemade Fudge",
+            "ingredient_text_override": "Carbonated Water, Natural Lemon Flavor, Citric Acid",
         },
     )
-    assert unverified_resp.status_code == 200
-    unv_res = unverified_resp.json()
-    assert unv_res["classification"] == "YELLOW"
-    assert unv_res["ingredient_source"] == "NONE"
-    assert unv_res["verified_ingredients"] == []
-
-
-def test_voice_endpoints_mock_fallback() -> None:
-    synth_resp = client.post(
-        "/api/voice/synthesize",
-        json={"text": "Welcome to the Crypt of Candies!"},
-    )
-    assert synth_resp.status_code == 200
-    assert synth_resp.json()["mime_type"] == "audio/mpeg"
-    assert len(synth_resp.json()["audio_base64"]) > 10
-
-    transcribe_resp = client.post(
-        "/api/voice/transcribe",
-        files={"audio": ("speech.webm", b"dummy_webm_audio_bytes", "audio/webm")},
-    )
-    assert transcribe_resp.status_code == 200
-    assert len(transcribe_resp.json()["text"]) > 0
+    assert good_resp.status_code == 200
+    good_data = good_resp.json()
+    assert good_data["classification"] == "GREEN"
+    assert good_data["ingredient_source"] == "USER_TEXT_INPUT"

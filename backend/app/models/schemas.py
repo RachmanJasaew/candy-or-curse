@@ -12,12 +12,15 @@ class ClassificationStatus(str, Enum):
 
 class IdentificationStatus(str, Enum):
     IDENTIFIED = "IDENTIFIED"
+    NEEDS_INGREDIENT_LABEL = "NEEDS_INGREDIENT_LABEL"
     AMBIGUOUS = "AMBIGUOUS"
     UNKNOWN = "UNKNOWN"
 
 
 class IngredientSource(str, Enum):
     VERIFIED_DATABASE = "VERIFIED_DATABASE"
+    PACKAGE_OCR = "PACKAGE_OCR"
+    USER_TEXT_INPUT = "USER_TEXT_INPUT"
     UNVERIFIED_FALLBACK = "UNVERIFIED_FALLBACK"
     NONE = "NONE"
 
@@ -26,7 +29,7 @@ class DietaryProfile(BaseModel):
     allergies: list[str] = Field(default_factory=list, description="Explicit allergens such as peanuts, milk, wheat")
     dietary_preferences: list[str] = Field(
         default_factory=list,
-        description="Preferences such as vegan, vegetarian, no_gelatin, halal, kosher, gluten_free",
+        description="Preferences such as halal, vegan, vegetarian, no_gelatin, eat_everything, kosher, gluten_free",
     )
     raw_notes: str = Field(default="", description="User's natural-language restriction notes")
     parsed_restrictions: list[str] = Field(
@@ -43,11 +46,19 @@ class ChatMessage(BaseModel):
 
 class RecognizedProduct(BaseModel):
     product_id: Optional[str] = Field(default=None, description="Canonical slug from products.json if matched")
-    name: str = Field(..., description="Display name of recognized candy or 'Unknown Product'")
+    name: str = Field(..., description="Display name of recognized food/candy or 'Unknown Product'")
     brand: Optional[str] = Field(default=None)
     category: Optional[str] = Field(default=None)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     visual_evidence: str = Field(default="", description="Brief description of visual cues observed by Gemma 4")
+
+
+class AlternativeProduct(BaseModel):
+    product_id: str
+    name: str
+    brand: str
+    category: str
+    reason: str = Field(..., description="Why this alternative fits the user's dietary preferences")
 
 
 class UncertaintyInfo(BaseModel):
@@ -68,12 +79,24 @@ class ScanResult(BaseModel):
     conflicting_ingredients: list[str] = Field(default_factory=list)
     verified_ingredients: list[str] = Field(default_factory=list)
     allergen_warnings: list[str] = Field(default_factory=list)
+    recommended_alternatives: list[AlternativeProduct] = Field(
+        default_factory=list,
+        description="Compatible alternative products suggested when classification is RED",
+    )
+    needs_ingredient_photo: bool = Field(
+        default=False,
+        description="True when the user filmed the front of an unknown product and should turn it around to show the ingredients",
+    )
+    agent_guidance_prompt: Optional[str] = Field(
+        default=None,
+        description="Conversational instruction such as 'Okay, turn it around. Let me see the ingredients.'",
+    )
     explanation: str
     keeper_spoken_summary: str
     uncertainty: UncertaintyInfo
     safety_disclaimer: str = Field(
         default=(
-            "Classification is based on our verified reference database. "
+            "Classification is based on our verified reference database or package OCR. "
             "Formulations vary by region and batch—always read the physical package label before consuming."
         )
     )
@@ -108,11 +131,19 @@ class ChatResponse(BaseModel):
 
 
 class ScanBase64Request(BaseModel):
-    image_base64: str = Field(..., description="Base64-encoded image or data URL")
+    image_base64: Optional[str] = Field(default=None, description="Base64-encoded image or data URL")
     mime_type: str = Field(default="image/jpeg")
+    ingredient_text_override: Optional[str] = Field(
+        default=None,
+        description="Optional raw ingredient list text pasted or typed by the user for higher accuracy",
+    )
+    scan_mode: str = Field(
+        default="auto",
+        description="'auto', 'front', 'ingredients', or 'live_stream'",
+    )
     demo_product_hint: Optional[str] = Field(
         default=None,
-        description="Optional product hint (e.g. 'haribo-goldbears') for deterministic offline testing",
+        description="Optional product hint (e.g. 'haribo-goldbears', 'water-bottle-front') for deterministic testing",
     )
 
 

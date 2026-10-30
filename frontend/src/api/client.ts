@@ -1,8 +1,5 @@
 /**
  * Frontend API Client & Mock Switcher (Developer A2)
- *
- * Set `VITE_USE_MOCK_API=false` in `.env` (or pass `useMock = false`)
- * once Team B's FastAPI backend URL (`VITE_API_BASE_URL`) is online.
  */
 import {
   ChatRequest,
@@ -78,9 +75,28 @@ export async function sendChatMessage(
 ): Promise<ChatResponse> {
   if (useMock) {
     const lower = payload.message.toLowerCase();
+    if (lower.includes("eat everything") || lower.includes("eat_everything")) {
+      mockSessionState.dietary_profile.parsed_restrictions = ["eat_everything"];
+      mockSessionState.dietary_profile.raw_notes = payload.message;
+      const reply =
+        "Awesome—you eat everything with no restrictions! Point your phone at any snack or drink.";
+      mockSessionState.chat_history.push(
+        { role: "user", content: payload.message, timestamp: new Date().toISOString() },
+        { role: "assistant", content: reply, timestamp: new Date().toISOString() }
+      );
+      return {
+        session_id: sessionId,
+        reply,
+        updated_dietary_profile: mockSessionState.dietary_profile,
+        extracted_new_restrictions: ["eat_everything"],
+      };
+    }
+
     const added: string[] = [];
+    if (lower.includes("halal")) added.push("halal", "pork", "no_gelatin");
     if (lower.includes("peanut")) added.push("peanuts");
     if (lower.includes("vegan")) added.push("vegan", "no_gelatin");
+    if (lower.includes("vegetarian")) added.push("vegetarian", "no_gelatin");
     if (lower.includes("gelatin")) added.push("no_gelatin");
     if (lower.includes("gluten") || lower.includes("wheat")) added.push("gluten");
     if (lower.includes("milk") || lower.includes("dairy") || lower.includes("lactose")) {
@@ -88,14 +104,18 @@ export async function sendChatMessage(
     }
 
     const merged = Array.from(
-      new Set([...mockSessionState.dietary_profile.parsed_restrictions, ...added])
+      new Set(
+        [...mockSessionState.dietary_profile.parsed_restrictions, ...added].filter(
+          (r) => r !== "eat_everything"
+        )
+      )
     );
     mockSessionState.dietary_profile.parsed_restrictions = merged;
     mockSessionState.dietary_profile.raw_notes = payload.message;
 
     const reply =
       added.length > 0
-        ? `The Candy Keeper has inscribed [${added.join(", ")}] onto your forbidden scroll! Scan a wrapper with your phone when ready.`
+        ? `Got it! I updated your profile with [${added.join(", ")}]. Film any product or show me its ingredient list!`
         : MOCK_CHAT_RESPONSE.reply;
 
     mockSessionState.chat_history.push(
@@ -127,16 +147,42 @@ export async function sendChatMessage(
 
 export async function scanCandyImage(
   sessionId: string,
-  fileOrBase64: File | string,
+  fileOrBase64?: File | string,
   demoProductHint?: string,
+  ingredientTextOverride?: string,
   useMock = DEFAULT_USE_MOCK
 ): Promise<ScanResult> {
   if (useMock) {
+    if (ingredientTextOverride && ingredientTextOverride.trim()) {
+      const lowerIng = ingredientTextOverride.toLowerCase();
+      const hasConflict =
+        lowerIng.includes("gelatin") ||
+        lowerIng.includes("pork") ||
+        lowerIng.includes("peanut");
+      const base = hasConflict
+        ? structuredClone(MOCK_SCAN_RED)
+        : structuredClone(MOCK_SCAN_GREEN);
+      base.ingredient_source = "USER_TEXT_INPUT";
+      base.recognized_product.name = "Custom Ingredient List Scan";
+      base.verified_ingredients = ingredientTextOverride
+        .split(/[,;\n]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      mockSessionState.latest_scan = base;
+      mockSessionState.scan_history.unshift(base);
+      return base;
+    }
+
     const hint = (demoProductHint || "").toLowerCase();
     let result: ScanResult = MOCK_SCAN_RED;
     if (hint.includes("capri") || hint.includes("skittles") || hint.includes("green")) {
       result = structuredClone(MOCK_SCAN_GREEN);
-    } else if (hint.includes("unknown") || hint.includes("yellow") || hint.includes("mystery")) {
+    } else if (
+      hint.includes("unknown") ||
+      hint.includes("yellow") ||
+      hint.includes("water") ||
+      hint.includes("turn")
+    ) {
       result = structuredClone(MOCK_SCAN_YELLOW);
     } else {
       result = structuredClone(MOCK_SCAN_RED);
@@ -153,14 +199,15 @@ export async function scanCandyImage(
     : "";
   const url = `${API_BASE_URL}/api/sessions/${encodeURIComponent(sessionId)}/scan${query}`;
 
-  if (typeof fileOrBase64 === "string") {
+  if (!fileOrBase64 || typeof fileOrBase64 === "string") {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        image_base64: fileOrBase64,
+        image_base64: fileOrBase64 || "",
         mime_type: "image/jpeg",
         demo_product_hint: demoProductHint,
+        ingredient_text_override: ingredientTextOverride,
       }),
     });
     if (!res.ok) {
@@ -173,6 +220,9 @@ export async function scanCandyImage(
   formData.append("image", fileOrBase64);
   if (demoProductHint) {
     formData.append("demo_product_hint", demoProductHint);
+  }
+  if (ingredientTextOverride) {
+    formData.append("ingredient_text_override", ingredientTextOverride);
   }
   const res = await fetch(url, {
     method: "POST",

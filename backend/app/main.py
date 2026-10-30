@@ -1,5 +1,6 @@
 """Candy or Curse? — FastAPI Main Application (Team B)."""
 import base64
+import re
 from typing import Any, Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile, status
@@ -10,6 +11,9 @@ from app.models.schemas import (
     ChatRequest,
     ChatResponse,
     CreateSessionRequest,
+    IdentificationStatus,
+    IngredientSource,
+    RecognizedProduct,
     ScanResult,
     SessionResponse,
     SynthesizeRequest,
@@ -24,10 +28,10 @@ from app.services.voice_service import synthesize_keeper_speech, transcribe_audi
 app = FastAPI(
     title="Candy or Curse? API",
     description=(
-        "Halloween AI Candy Scanner Backend powered by Gemma 4 Vision, "
-        "ElevenLabs Voice, and a Verified Ingredient Classification Engine."
+        "AI Food & Halloween Candy Scanner Backend powered by Gemma 4 Vision (Front-of-pack + Ingredient OCR), "
+        "ElevenLabs Voice Coaching, Recommended Alternatives, and a Verified Ingredient Classification Engine."
     ),
-    version="1.0.0",
+    version="1.1.0",
 )
 
 app.add_middleware(
@@ -49,6 +53,13 @@ async def health_check() -> dict[str, Any]:
         "gemma_api_configured": bool(settings.GEMINI_API_KEY),
         "elevenlabs_api_configured": bool(settings.ELEVENLABS_API_KEY),
         "verified_products_count": len(PRODUCTS_DB),
+        "features": [
+            "front_of_pack_recognition",
+            "back_of_pack_ingredient_ocr",
+            "manual_ingredient_text_input",
+            "recommended_alternatives",
+            "live_stream_voice_coaching",
+        ],
     }
 
 
@@ -68,7 +79,7 @@ async def list_verified_products() -> dict[str, Any]:
     tags=["Sessions"],
 )
 async def create_session(req: Optional[CreateSessionRequest] = None) -> SessionResponse:
-    """Create a new scanning session with dietary restrictions and return QR session metadata."""
+    """Create a new scanning session with dietary preferences/allergies and return QR session metadata."""
     payload = req or CreateSessionRequest()
     return session_store.create_session(payload)
 
@@ -126,10 +137,10 @@ async def scan_candy(
     request: Request,
     demo_product_hint: Optional[str] = Query(
         default=None,
-        description="Optional product slug (e.g. 'haribo-goldbears', 'snickers-original', 'capri-sun-multivitamin') for deterministic testing",
+        description="Optional product slug (e.g. 'haribo-goldbears', 'water-bottle-front', 'capri-sun-multivitamin')",
     ),
 ) -> ScanResult:
-    """Upload a candy image (multipart/form-data OR JSON base64) and get a GREEN/RED/YELLOW classification."""
+    """Scan a food/candy image (front OR ingredient label) or raw ingredient text and get classification + alternatives."""
     session = session_store.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
@@ -138,12 +149,14 @@ async def scan_candy(
     image_bytes = b""
     mime_type = "image/jpeg"
     hint = demo_product_hint
+    ingredient_text_override: Optional[str] = None
 
     if "application/json" in content_type:
         body = await request.json()
-        b64_str = body.get("image_base64", "")
-        mime_type = body.get("mime_type", "image/jpeg")
+        b64_str = body.get("image_base64") or ""
+        mime_type = body.get("mime_type") or "image/jpeg"
         hint = hint or body.get("demo_product_hint")
+        ingredient_text_override = body.get("ingredient_text_override")
         if b64_str:
             if "," in b64_str:
                 b64_str = b64_str.split(",", 1)[1]
@@ -155,23 +168,69 @@ async def scan_candy(
         form = await request.form()
         upload = form.get("image")
         form_hint = form.get("demo_product_hint")
+        form_ing = form.get("ingredient_text_override")
         if isinstance(form_hint, str) and form_hint.strip():
             hint = hint or form_hint.strip()
+        if isinstance(form_ing, str) and form_ing.strip():
+            ingredient_text_override = form_ing.strip()
         if upload is not None and hasattr(upload, "read"):
             image_bytes = await upload.read()  # type: ignore[misc]
             mime_type = getattr(upload, "content_type", None) or "image/jpeg"
 
-    if not image_bytes and not hint:
+    if not image_bytes and not hint and not ingredient_text_override:
         raise HTTPException(
             status_code=400,
-            detail="Please provide an 'image' file (multipart/form-data) or 'image_base64' (JSON).",
+            detail="Provide an 'image' file, 'image_base64', or 'ingredient_text_override'.",
         )
 
-    recognized_product, identification_status, uncertainty_reasons = await recognize_candy_image(
+    # If user typed/pasted an ingredient list directly without an image
+    if ingredient_text_override and not image_bytes and not hint:
+        typed_list = [
+            tok.strip()
+            for tok in re.split(r"[,;\n]+", ingredient_text_override)
+            if tok.strip()
+        ]
+        recognized_product = RecognizedProduct(
+            product_id=None,
+            name="Custom Ingredient Label",
+            brand=None,
+            category="custom_food",
+            confidence=0.98,
+            visual_evidence="User provided ingredient list text directly.",
+        )
+        scan_result = classify_product_for_session(
+            session_id=session_id,
+            recognized=recognized_product,
+            identification_status=IdentificationStatus.IDENTIFIED,
+            dietary_profile=session.dietary_profile,
+            ocr_or_typed_ingredients=typed_list,
+            ingredient_source_override=IngredientSource.USER_TEXT_INPUT,
+        )
+        session_store.record_scan(session_id, scan_result)
+        return scan_result
+
+    (
+        recognized_product,
+        identification_status,
+        uncertainty_reasons,
+        ocr_ingredients,
+    ) = await recognize_candy_image(
         image_bytes=image_bytes,
         mime_type=mime_type,
         demo_product_hint=hint,
     )
+
+    custom_ingredients = ocr_ingredients
+    source_override: Optional[IngredientSource] = (
+        IngredientSource.PACKAGE_OCR if ocr_ingredients else None
+    )
+    if ingredient_text_override:
+        custom_ingredients = [
+            tok.strip()
+            for tok in re.split(r"[,;\n]+", ingredient_text_override)
+            if tok.strip()
+        ]
+        source_override = IngredientSource.USER_TEXT_INPUT
 
     scan_result = classify_product_for_session(
         session_id=session_id,
@@ -179,6 +238,8 @@ async def scan_candy(
         identification_status=identification_status,
         dietary_profile=session.dietary_profile,
         uncertainty_reasons=uncertainty_reasons,
+        ocr_or_typed_ingredients=custom_ingredients,
+        ingredient_source_override=source_override,
     )
     session_store.record_scan(session_id, scan_result)
     return scan_result
