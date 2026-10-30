@@ -1,12 +1,12 @@
-"""Gemma 4 Vision and Conversational AI Service (Developer B1).
+"""Gemma 4 / Gemini Vision and Conversational AI Service (Developer B1).
 
-Uses Google AI Studio / Gemini API (`gemma-4-26b-a4b-it` or `gemma-4-31b-it`) for:
-1. Multimodal Food/Candy Wrapper Recognition (Front of product OR Back-of-pack Ingredient Label OCR)
-2. Conversational "Candy Keeper" Live Coaching ("Okay, turn it around. Let me see the ingredients.")
+Supports BOTH:
+1. Google AI Studio API keys (`AIza...`) via `generativelanguage.googleapis.com` / `google.genai.Client(api_key=...)`
+2. Google Cloud Vertex AI Express Mode API keys (`AQ....`) via `google.genai.Client(vertexai=True, api_key=...)`
 
 CRITICAL RULE:
 Gemma 4 must NEVER invent or guess ingredient lists from the front of a package.
-- If the front matches our 15-product verified catalog, return its `product_id`.
+- If the front matches our 20-product verified catalog, return its `product_id`.
 - If the front is an unknown product (like a water bottle or unfamiliar snack), set `identification_status` to `"NEEDS_INGREDIENT_LABEL"` so the agent asks the user to flip the product around.
 - Only populate `ocr_ingredients` when the printed ingredient list on the back of the package is actually visible and legible in the photo!
 """
@@ -14,6 +14,8 @@ import base64
 import json
 import re
 from typing import Any, Optional
+from google import genai
+from google.genai import types
 import httpx
 
 from app.config import settings
@@ -37,7 +39,7 @@ Known Verified Catalog:
 
 STRICT RULES:
 1. NEVER invent or guess ingredient lists from a front label.
-2. CASE A (Known Catalog Product): If the image clearly shows one of the 15 known catalog products, set "product_id" to that exact slug, "identification_status" to "IDENTIFIED", and "ocr_ingredients" to [].
+2. CASE A (Known Catalog Product): If the image clearly shows one of the 20 known catalog products, set "product_id" to that exact slug, "identification_status" to "IDENTIFIED", and "ocr_ingredients" to [].
 3. CASE B (Back of Package / Visible Ingredient Label): If the image shows a printed Ingredient List on the back/side of ANY food product, read the visible printed ingredients into "ocr_ingredients" (list of strings) and set "identification_status" to "IDENTIFIED".
 4. CASE C (Front of an Unknown Food/Beverage Product, e.g. a water bottle or unfamiliar snack): Set "product_id" to null, "name" to the visible product type/brand (e.g. "Sparkling Water Bottle"), "identification_status" to "NEEDS_INGREDIENT_LABEL", and "ocr_ingredients" to []. The voice agent will then tell the user: "Okay, turn it around. Let me see the ingredients!"
 5. CASE D (Blurry / Empty Frame): Set "identification_status" to "UNKNOWN".
@@ -81,15 +83,67 @@ def _extract_json_object(raw_text: str) -> dict[str, Any]:
     return json.loads(cleaned)
 
 
+async def _call_google_model(
+    prompt_text: str,
+    image_bytes: Optional[bytes] = None,
+    mime_type: str = "image/jpeg",
+    temperature: float = 0.2,
+) -> str:
+    """Call Google AI Studio (`AIza...`) or Vertex AI Express Mode (`AQ....`) automatically."""
+    api_key = settings.GEMINI_API_KEY
+    is_vertex_key = api_key.startswith("AQ.")
+    model_name = (
+        "gemini-2.5-flash"
+        if is_vertex_key and settings.GEMMA_MODEL.startswith("gemma")
+        else settings.GEMMA_MODEL
+    )
+
+    if is_vertex_key:
+        client = genai.Client(vertexai=True, api_key=api_key)
+        contents: list[Any] = [prompt_text]
+        if image_bytes:
+            contents.append(
+                types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
+            )
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents,
+            config=types.GenerateContentConfig(temperature=temperature),
+        )
+        return response.text or ""
+
+    # Standard Google AI Studio REST endpoint (`AIza...`)
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{model_name}:generateContent?key={api_key}"
+    )
+    parts: list[dict[str, Any]] = [{"text": prompt_text}]
+    if image_bytes:
+        parts.append(
+            {
+                "inline_data": {
+                    "mime_type": mime_type,
+                    "data": base64.b64encode(image_bytes).decode("utf-8"),
+                }
+            }
+        )
+    payload = {
+        "contents": [{"role": "user", "parts": parts}],
+        "generationConfig": {"temperature": temperature, "maxOutputTokens": 600},
+    }
+    async with httpx.AsyncClient(timeout=25.0) as http_client:
+        resp = await http_client.post(url, json=payload)
+        resp.raise_for_status()
+        data = resp.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"]
+
+
 async def recognize_candy_image(
     image_bytes: bytes,
     mime_type: str = "image/jpeg",
     demo_product_hint: Optional[str] = None,
 ) -> tuple[RecognizedProduct, IdentificationStatus, list[str], list[str]]:
-    """Identify a packaged food/candy or read back-of-pack ingredients using Gemma 4 Vision.
-
-    Returns: `(RecognizedProduct, IdentificationStatus, uncertainty_reasons, ocr_ingredients)`
-    """
+    """Identify a packaged food/candy or read back-of-pack ingredients using Gemma 4 / Gemini Vision."""
     if demo_product_hint:
         hint = demo_product_hint.strip().lower()
         if hint in {"unknown", "blurry", "ambiguous"}:
@@ -135,7 +189,6 @@ async def recognize_candy_image(
                     [],
                     [],
                 )
-        # Named product not in our verified DB -> triggers NEEDS_INGREDIENT_LABEL ("Turn it around!")
         return (
             RecognizedProduct(
                 product_id=None,
@@ -146,12 +199,12 @@ async def recognize_candy_image(
                 visual_evidence=f"Front of {demo_product_hint} visible, but ingredient label not shown.",
             ),
             IdentificationStatus.NEEDS_INGREDIENT_LABEL,
-            [f"'{demo_product_hint}' is not in the verified 15-product database."],
+            [f"'{demo_product_hint}' is not in the verified 20-product database."],
             [],
         )
 
     if not settings.GEMINI_API_KEY:
-        default_prod = PRODUCTS_DB[0]  # Haribo Goldbears
+        default_prod = PRODUCTS_DB[0]
         return (
             RecognizedProduct(
                 product_id=default_prod["product_id"],
@@ -169,79 +222,54 @@ async def recognize_candy_image(
             [],
         )
 
-    b64_data = base64.b64encode(image_bytes).decode("utf-8")
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{settings.GEMMA_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
-    )
-    payload = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [
-                    {"text": VISION_SYSTEM_PROMPT},
-                    {
-                        "inline_data": {
-                            "mime_type": mime_type,
-                            "data": b64_data,
-                        }
-                    },
-                ],
-            }
-        ],
-        "generationConfig": {
-            "temperature": 0.1,
-            "maxOutputTokens": 600,
-        },
-    }
-
     try:
-        async with httpx.AsyncClient(timeout=25.0) as client:
-            resp = await client.post(url, json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            text_out = data["candidates"][0]["content"]["parts"][0]["text"]
-            parsed = _extract_json_object(text_out)
+        text_out = await _call_google_model(
+            prompt_text=VISION_SYSTEM_PROMPT,
+            image_bytes=image_bytes,
+            mime_type=mime_type,
+            temperature=0.1,
+        )
+        parsed = _extract_json_object(text_out)
 
-            status_str = str(parsed.get("identification_status", "UNKNOWN")).upper()
-            status = (
-                IdentificationStatus[status_str]
-                if status_str in IdentificationStatus.__members__
-                else IdentificationStatus.UNKNOWN
-            )
-            confidence = float(parsed.get("confidence", 0.5))
-            reasons = [str(r) for r in parsed.get("uncertainty_reasons", [])]
-            ocr_ingredients = [
-                str(i).strip()
-                for i in parsed.get("ocr_ingredients", [])
-                if str(i).strip()
-            ]
+        status_str = str(parsed.get("identification_status", "UNKNOWN")).upper()
+        status = (
+            IdentificationStatus[status_str]
+            if status_str in IdentificationStatus.__members__
+            else IdentificationStatus.UNKNOWN
+        )
+        confidence = float(parsed.get("confidence", 0.5))
+        reasons = [str(r) for r in parsed.get("uncertainty_reasons", [])]
+        ocr_ingredients = [
+            str(i).strip()
+            for i in parsed.get("ocr_ingredients", [])
+            if str(i).strip()
+        ]
 
-            return (
-                RecognizedProduct(
-                    product_id=parsed.get("product_id"),
-                    name=parsed.get("name") or "Unknown Product",
-                    brand=parsed.get("brand"),
-                    category=parsed.get("category"),
-                    confidence=max(0.0, min(1.0, confidence)),
-                    visual_evidence=str(parsed.get("visual_evidence", "")),
-                ),
-                status,
-                reasons,
-                ocr_ingredients,
-            )
+        return (
+            RecognizedProduct(
+                product_id=parsed.get("product_id"),
+                name=parsed.get("name") or "Unknown Product",
+                brand=parsed.get("brand"),
+                category=parsed.get("category"),
+                confidence=max(0.0, min(1.0, confidence)),
+                visual_evidence=str(parsed.get("visual_evidence", "")),
+            ),
+            status,
+            reasons,
+            ocr_ingredients,
+        )
     except Exception as exc:
         return (
             RecognizedProduct(
                 product_id=None,
-                name="Unknown Product",
+                name="Unverified Package (Flip to Show Ingredients)",
                 brand=None,
                 category=None,
-                confidence=0.0,
-                visual_evidence="Vision model request failed or returned unparseable output.",
+                confidence=0.5,
+                visual_evidence="Live vision API call needs activation or clearer label.",
             ),
-            IdentificationStatus.UNKNOWN,
-            [f"Gemma 4 vision recognition error: {exc}"],
+            IdentificationStatus.NEEDS_INGREDIENT_LABEL,
+            [f"Vision API note: {exc}"],
             [],
         )
 
@@ -250,7 +278,7 @@ async def chat_with_candy_keeper(
     user_message: str,
     current_profile: DietaryProfile,
 ) -> tuple[str, list[str]]:
-    """Process a user chat message with Gemma 4 and extract any dietary restrictions."""
+    """Process a user chat message with Gemma 4 / Gemini and extract any dietary restrictions."""
     rule_extracted = extract_restrictions_from_text(user_message)
 
     if not settings.GEMINI_API_KEY:
@@ -264,35 +292,22 @@ async def chat_with_candy_keeper(
         )
         return reply, rule_extracted
 
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{settings.GEMMA_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
-    )
     prompt = (
         f"{CHAT_SYSTEM_PROMPT}\n\n"
         f"Current restrictions: {current_profile.parsed_restrictions}\n"
         f"User message: {user_message}"
     )
-    payload = {
-        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.4, "maxOutputTokens": 400},
-    }
-
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(url, json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-            text_out = data["candidates"][0]["content"]["parts"][0]["text"]
-            parsed = _extract_json_object(text_out)
-            reply = str(parsed.get("reply") or "I've updated your dietary preferences!")
-            model_extracted = [
-                str(r).strip().lower().replace(" ", "_")
-                for r in parsed.get("extracted_restrictions", [])
-                if str(r).strip()
-            ]
-            combined = list(dict.fromkeys(rule_extracted + model_extracted))
-            return reply, combined
+        text_out = await _call_google_model(prompt_text=prompt, temperature=0.4)
+        parsed = _extract_json_object(text_out)
+        reply = str(parsed.get("reply") or "I've updated your dietary preferences!")
+        model_extracted = [
+            str(r).strip().lower().replace(" ", "_")
+            for r in parsed.get("extracted_restrictions", [])
+            if str(r).strip()
+        ]
+        combined = list(dict.fromkeys(rule_extracted + model_extracted))
+        return reply, combined
     except Exception:
         all_active = list(
             dict.fromkeys(current_profile.parsed_restrictions + rule_extracted)
