@@ -30,14 +30,37 @@
         : localStorage.getItem("coc_session_id") || null,
       session: null,
       busy: false,
+      error: "",
+      voiceConfigured: false,
+      testJoinToken: "",
+      chatDraft: "",
+      cameraStream: null,
       isRecording: false,
       cameraActive: false,
       liveStreamMode: false,
       mediaRecorder: null,
       audioChunks: [],
-      streamTimer: null
+      streamTimer: null,
+      recordingTimer: null,
+      leaving: false
     };
 
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const escapeData = (value) => typeof value === "string" ? escapeHtml(value)
+      : Array.isArray(value) ? value.map(escapeData)
+      : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([k,v]) => [k,escapeData(v)])) : value;
+    function attachCamera() {
+      const video = document.getElementById("cameraPreview");
+      if (video && state.cameraStream) {
+        video.srcObject = state.cameraStream;
+        video.play().catch(() => {});
+      }
+    }
+    async function checkedJson(res) {
+      const data = await res.json();
+      if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Request failed. Please try again.");
+      return data;
+    }
     async function speakText(text) {
       if (!text) return;
       try {
@@ -66,6 +89,10 @@
 
     async function initSession() {
       try {
+        const health = await checkedJson(await fetch("/api/health"));
+        state.voiceConfigured = health.elevenlabs_api_configured;
+        const access = await fetch("/test-access");
+        if (access.ok) state.testJoinToken = (await access.json()).join_token || "";
         if (state.sessionId) {
           const res = await fetch(`/api/sessions/${encodeURIComponent(state.sessionId)}`);
           if (res.ok) {
@@ -74,26 +101,26 @@
             return;
           }
         }
+        if (state.mode === "mobile") throw new Error("This session is unavailable. Open the desktop app and scan its QR code again.");
         const createRes = await fetch("/api/sessions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            initial_message: "I want Halal food, avoid gelatin, and have a peanut allergy.",
-            allergies: ["peanuts"],
-            dietary_preferences: ["halal", "no_gelatin"]
-          })
+          body: JSON.stringify({})
         });
-        state.session = await createRes.json();
+        state.session = await checkedJson(createRes);
         state.sessionId = state.session.session_id;
         localStorage.setItem("coc_session_id", state.sessionId);
         render();
       } catch (err) {
-        console.error("Failed to initialize session:", err);
+        state.error = err.message || "Could not connect. Please reload.";
+        render();
       }
     }
 
     async function sendChat(message) {
-      if (!message || !state.sessionId) return;
+      if (!message || !state.sessionId || state.busy || state.isRecording) return;
+      state.error = "";
+      state.chatDraft = "";
       state.busy = true;
       render();
       try {
@@ -102,10 +129,13 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message })
         });
-        const data = await res.json();
+        const data = await checkedJson(res);
         const refreshed = await fetch(`/api/sessions/${encodeURIComponent(state.sessionId)}`);
         state.session = await refreshed.json();
         speakText(data.reply);
+      } catch (err) {
+        state.error = err.message;
+        state.chatDraft = message;
       } finally {
         state.busy = false;
         render();
@@ -113,7 +143,8 @@
     }
 
     async function runScan({ imageBase64 = "", file = null, hint = "", ingredientText = "" }) {
-      if (!state.sessionId) return;
+      if (!state.sessionId || state.busy || state.isRecording) return;
+      state.error = "";
       state.busy = true;
       render();
       try {
@@ -140,10 +171,12 @@
             })
           });
         }
-        const scanResult = await res.json();
+        const scanResult = await checkedJson(res);
         const refreshed = await fetch(`/api/sessions/${encodeURIComponent(state.sessionId)}`);
         state.session = await refreshed.json();
         speakText(scanResult.keeper_spoken_summary);
+      } catch (err) {
+        state.error = err.message;
       } finally {
         state.busy = false;
         render();
@@ -151,6 +184,7 @@
     }
 
     function renderOverlay(scan) {
+      scan = escapeData(scan);
       if (!scan) {
         return `
           <div class="rounded-3xl border border-white/10 bg-black/30 p-6 text-center text-sm text-amber-200/60">
@@ -249,16 +283,13 @@
     function render() {
       const root = document.getElementById("app");
       if (!state.session) {
-        root.innerHTML = `<div class="p-12 text-center text-lg font-bold text-orange-300 animate-pulse">🎃 Summoning The Candy Keeper...</div>`;
+        root.innerHTML = `<div class="p-12 text-center text-lg font-bold text-orange-300">${state.error ? escapeHtml(state.error) : "🎃 Summoning The Candy Keeper..."}</div>`;
         return;
       }
 
-      const restrictions = state.session.dietary_profile?.parsed_restrictions || [];
-      const originToUse =
-        window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-          ? "https://2787a37f45ccde.lhr.life"
-          : window.location.origin;
-      const qrUrl = `${originToUse}/scan/${state.session.session_id}`;
+      const restrictions = (state.session.dietary_profile?.parsed_restrictions || []).map(escapeHtml);
+      const originToUse = window.location.origin;
+      const qrUrl = `${originToUse}/scan/${state.session.session_id}${state.testJoinToken ? "?access_token=" + encodeURIComponent(state.testJoinToken) : ""}`;
       const latestScan = state.session.latest_scan;
 
       const modeSwitchBtn = state.mode === "desktop"
@@ -285,6 +316,8 @@
             ${modeSwitchBtn}
           </div>
         </header>
+        ${state.error ? `<p role="alert" class="mt-3 rounded-xl bg-red-950 p-3 text-red-100">${escapeHtml(state.error)}</p>` : ""}
+        ${state.busy ? `<p role="status" class="mt-3 text-amber-200">Working… please wait. Image analysis can take up to a few minutes.</p>` : ""}
       `;
 
       if (state.mode === "mobile") {
@@ -342,6 +375,7 @@
             ${renderOverlay(latestScan)}
           </div>
         `;
+        attachCamera();
         return;
       }
 
@@ -388,17 +422,19 @@
                   <span class="mb-1 block text-[10px] font-extrabold uppercase tracking-wider text-orange-300/80">
                     ${m.role === "assistant" ? "🧙‍♂️ The Candy Keeper" : "🧑 You"}
                   </span>
-                  ${m.content}
+                  ${escapeHtml(m.content)}
                 </div>
               `).join("")}
             </div>
 
             <form onsubmit="window.submitChatForm(event)" class="mt-4 flex gap-2">
-              <input id="chatInput" type="text" placeholder="Type preferences or allergies (e.g. Halal, no gelatin, allergic to nuts)..." class="flex-1 rounded-2xl border border-purple-400/40 bg-black/60 px-4 py-3 text-sm text-white placeholder-amber-200/40 focus:border-orange-400 focus:outline-none" />
-              <button type="submit" class="rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black text-black hover:bg-orange-400">
+              <input id="chatInput" value="${escapeHtml(state.chatDraft)}" oninput="window.updateDraft(this.value)" ${state.busy || state.isRecording ? "disabled" : ""} type="text" placeholder="Type preferences or allergies (e.g. Halal, no gelatin, allergic to nuts)..." class="flex-1 rounded-2xl border border-purple-400/40 bg-black/60 px-4 py-3 text-sm text-white placeholder-amber-200/40 focus:border-orange-400 focus:outline-none" />
+              <button type="button" onclick="window.toggleRecording()" ${state.busy || !state.voiceConfigured ? "disabled" : ""} class="rounded-2xl bg-purple-700 px-3 py-2 disabled:opacity-40">${state.isRecording ? "⏹ Stop" : "🎙 Record"}</button>
+              <button type="submit" ${state.busy || state.isRecording ? "disabled" : ""} class="rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black text-black hover:bg-orange-400">
                 ${state.busy ? "..." : "Send"}
               </button>
             </form>
+            <p role="status" class="mt-2 text-xs text-amber-200/75">${state.isRecording ? "Recording… press Stop when finished." : state.voiceConfigured ? "Record your preferences, then review the text before pressing Send." : "Voice input unavailable. Please type your preferences."}</p>
 
             <div class="mt-4 border-t border-white/10 pt-3">
               <p class="text-[11px] font-bold uppercase tracking-wider text-amber-200/70">⚡ Instant Product Simulator (Click to Test Classification &amp; Alternatives):</p>
@@ -440,7 +476,60 @@
       }
     }
 
+    window.updateDraft = (value) => { state.chatDraft = value; };
+    window.toggleRecording = async () => {
+      if (state.busy) return;
+      state.error = "";
+      if (state.isRecording) { state.mediaRecorder.stop(); return; }
+      state.busy = true;
+      render();
+      let stream;
+      try {
+        if (!window.MediaRecorder || !navigator.mediaDevices?.getUserMedia) throw new Error("Microphone recording is unavailable here. Please type your message.");
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(t => MediaRecorder.isTypeSupported(t));
+        const recorder = new MediaRecorder(stream, mime ? {mimeType: mime} : undefined);
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+        recorder.onerror = () => { stream.getTracks().forEach(t => t.stop()); state.isRecording = false; state.error = "Recording failed. Please type your message."; render(); };
+        recorder.onstop = async () => {
+          clearTimeout(state.recordingTimer);
+          stream.getTracks().forEach(t => t.stop());
+          if (state.leaving) return;
+          state.isRecording = false;
+          state.busy = true;
+          render();
+          try {
+            const type = recorder.mimeType || mime || "audio/webm";
+            const blob = new Blob(chunks, {type});
+            if (!blob.size) throw new Error("No audio was recorded. Please try again.");
+            const form = new FormData();
+            form.append("audio", blob, type.includes("mp4") ? "recording.mp4" : "recording.webm");
+            const data = await checkedJson(await fetch("/api/voice/transcribe", {method:"POST", body:form}));
+            if (String(data.provider).includes("mock") || !data.text?.trim()) throw new Error("No speech could be transcribed. Please type your message.");
+            state.chatDraft = data.text.trim();
+          } catch (err) { state.error = err.message; }
+          finally { state.busy = false; render(); }
+        };
+        state.mediaRecorder = recorder;
+        recorder.start();
+        state.recordingTimer = setTimeout(() => { if (recorder.state === "recording") recorder.stop(); }, 60000);
+        state.isRecording = true;
+      } catch (err) {
+        stream?.getTracks().forEach(t => t.stop());
+        state.error = "Microphone could not start. Check permission or type your message.";
+      }
+      state.busy = false;
+      render();
+    };
+    window.onpagehide = () => {
+      state.leaving = true;
+      clearTimeout(state.recordingTimer);
+      state.cameraStream?.getTracks().forEach(t => t.stop());
+      state.mediaRecorder?.stream?.getTracks().forEach(t => t.stop());
+    };
     window.switchMode = (m) => {
+      if (state.busy || state.isRecording) return;
       state.mode = m;
       render();
     };
@@ -465,7 +554,9 @@
     };
     window.startCameraStream = async () => {
       try {
+        state.cameraStream?.getTracks().forEach(t => t.stop());
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        state.cameraStream = stream;
         state.cameraActive = true;
         render();
         const video = document.getElementById("cameraPreview");
@@ -493,7 +584,7 @@
 
     initSession();
     setInterval(async () => {
-      if (state.mode === "desktop" && state.sessionId && !state.busy) {
+      if (state.mode === "desktop" && state.sessionId && !state.busy && !state.isRecording) {
         try {
           const res = await fetch(`/api/sessions/${encodeURIComponent(state.sessionId)}`);
           if (res.ok) {
