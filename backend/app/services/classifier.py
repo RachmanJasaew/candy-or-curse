@@ -1,4 +1,4 @@
-"""Verified product lookup, OCR/text ingredient analyzer, alternative recommender, and deterministic classifier.
+"""Verified product lookup, bilingual (EN/DE) OCR/text ingredient analyzer, alternative recommender, and deterministic classifier (Developer B2).
 
 SAFETY POLICY:
 - Never describe any product as "allergy-safe" or "100% safe".
@@ -9,7 +9,6 @@ SAFETY POLICY:
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-import re
 from typing import Any, Optional
 import uuid
 
@@ -27,55 +26,90 @@ from app.models.schemas import (
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "products.json"
 
 SYNONYM_MAP: dict[str, list[str]] = {
-    "eat_everything": ["eat everything", "eat_everything", "no restrictions", "anything", "alles essen"],
-    "vegan": ["vegan", "plant-based", "plant based", "no animal products"],
-    "vegetarian": ["vegetarian", "veggie", "meat-free"],
-    "no_gelatin": ["no gelatin", "no_gelatin", "gelatin-free", "gelatin free", "avoid gelatin", "gelatine", "gelatin"],
-    "pork": ["pork", "pork-free", "no pork", "swine", "pig", "schwein"],
+    "eat_everything": ["eat everything", "eat_everything", "no restrictions", "anything", "alles essen", "keine einschränkungen"],
+    "vegan": ["vegan", "plant-based", "plant based", "no animal products", "pflanzlich"],
+    "vegetarian": ["vegetarian", "veggie", "meat-free", "vegetarisch"],
+    "no_gelatin": ["no gelatin", "no_gelatin", "gelatin-free", "gelatin free", "avoid gelatin", "gelatine", "gelatin", "ohne gelatine"],
+    "pork": ["pork", "pork-free", "no pork", "swine", "pig", "schwein", "schweinefleisch"],
     "halal": ["halal"],
-    "kosher": ["kosher"],
+    "kosher": ["kosher", "koscher"],
     "peanuts": ["peanut", "peanuts", "groundnut", "arachis", "erdnuss", "erdnüsse"],
-    "tree_nuts": ["tree nut", "tree nuts", "tree_nuts", "almond", "walnut", "cashew", "pecan", "pistachio"],
-    "hazelnuts": ["hazelnut", "hazelnuts", "filbert", "haselnuss"],
-    "nuts": ["nut", "nuts", "nut allergy", "allergic to nuts", "nüsse"],
-    "milk": ["milk", "cow's milk", "cows milk", "milk protein", "whey", "casein", "butterfat", "skim milk", "milch"],
-    "dairy": ["dairy", "dairy-free", "dairy free", "no dairy"],
-    "lactose": ["lactose", "lactose intolerant", "lactose-free", "laktose"],
-    "eggs": ["egg", "eggs", "egg white", "albumin", "ei", "eier"],
-    "soy": ["soy", "soya", "soybean", "soy lecithin", "soja"],
-    "wheat": ["wheat", "wheat flour", "weizen"],
-    "gluten": ["gluten", "gluten-free", "gluten free", "celiac", "coeliac", "barley"],
-    "fructose": ["fructose", "fructose intolerance"],
-    "sugar_free": ["sugar-free", "sugar free", "no sugar", "diabetic", "zuckerfrei"],
+    "tree_nuts": ["tree nut", "tree nuts", "tree_nuts", "almond", "walnut", "cashew", "pecan", "pistachio", "mandel", "mandeln", "walnuss", "schalenfrüchte"],
+    "hazelnuts": ["hazelnut", "hazelnuts", "filbert", "haselnuss", "haselnüsse"],
+    "nuts": ["nut", "nuts", "nut allergy", "allergic to nuts", "nuss", "nüsse"],
+    "milk": ["milk", "cow's milk", "cows milk", "milk protein", "whey", "casein", "butterfat", "skim milk", "milch", "magermilch", "vollmilch", "molke"],
+    "dairy": ["dairy", "dairy-free", "dairy free", "no dairy", "milchfrei"],
+    "lactose": ["lactose", "lactose intolerant", "lactose-free", "laktose", "laktosefrei", "milchzucker"],
+    "eggs": ["egg", "eggs", "egg white", "albumin", "ei", "eier", "hühnerei"],
+    "soy": ["soy", "soya", "soybean", "soy lecithin", "soja", "sojalecithin"],
+    "wheat": ["wheat", "wheat flour", "weizen", "weizenmehl"],
+    "gluten": ["gluten", "gluten-free", "gluten free", "celiac", "coeliac", "barley", "glutenfrei", "gerste", "roggen"],
+    "fructose": ["fructose", "fructose intolerance", "fruktose"],
+    "sugar_free": ["sugar-free", "sugar free", "no sugar", "diabetic", "zuckerfrei", "ohne zucker"],
 }
 
-# Ingredient keywords used when checking OCR or user-typed ingredient lists directly
+# Bilingual (English + German) ingredient keywords used when checking OCR or user-typed ingredient lists directly
 RAW_INGREDIENT_CONFLICT_KEYWORDS: dict[str, list[str]] = {
-    "vegan": ["gelatin", "gelatine", "milk", "whey", "lactose", "casein", "butter", "cream", "egg", "albumin", "honey", "beeswax", "carmine", "shellac", "pork", "beef", "yoghurt", "yogurt"],
-    "vegetarian": ["gelatin", "gelatine", "pork", "beef", "lard", "tallow", "carmine"],
-    "no_gelatin": ["gelatin", "gelatine"],
-    "gelatin": ["gelatin", "gelatine"],
-    "pork": ["pork", "swine", "gelatin", "gelatine", "lard", "bacon"],
-    "halal": ["pork", "swine", "gelatin", "gelatine", "lard", "alcohol", "ethanol", "rum", "wine", "beer", "liqueur", "carmine"],
-    "kosher": ["pork", "swine", "gelatin", "gelatine", "lard", "shellfish"],
-    "peanuts": ["peanut", "peanuts", "groundnut", "arachis"],
-    "tree_nuts": ["hazelnut", "almond", "walnut", "cashew", "pecan", "pistachio", "macadamia", "brazil nut", "tree nut"],
-    "hazelnuts": ["hazelnut", "hazelnuts", "filbert"],
-    "nuts": ["peanut", "hazelnut", "almond", "walnut", "cashew", "pecan", "pistachio", "nut"],
-    "milk": ["milk", "whey", "lactose", "casein", "butter", "cream", "yoghurt", "yogurt", "dairy"],
-    "dairy": ["milk", "whey", "lactose", "casein", "butter", "cream", "yoghurt", "yogurt", "dairy"],
-    "lactose": ["lactose", "milk", "whey", "cream", "butter", "yoghurt", "yogurt"],
-    "eggs": ["egg", "eggs", "albumin", "lysozyme"],
-    "soy": ["soy", "soya", "soybean"],
-    "wheat": ["wheat", "spelt", "semolina", "durum"],
-    "gluten": ["wheat", "barley", "rye", "malt", "gluten", "spelt", "triticale"],
-    "fructose": ["fructose", "high fructose corn syrup", "fruit juice", "sugar", "sucrose", "honey", "agave"],
-    "sugar_free": ["sugar", "sucrose", "glucose syrup", "corn syrup", "dextrose", "fructose", "invert sugar", "maltose", "honey"],
+    "vegan": [
+        "gelatin", "gelatine", "schweinegelatine", "speisegelatine",
+        "milk", "milch", "magermilch", "vollmilch", "molke", "süßmolke", "whey",
+        "lactose", "laktose", "milchzucker", "casein", "butter", "butterreinfett",
+        "cream", "sahne", "rahm", "egg", "ei", "hühnerei", "albumin",
+        "honey", "honig", "beeswax", "bienenwachs", "carmine", "karmin", "echtes karmin",
+        "shellac", "schellack", "pork", "schwein", "beef", "rind", "yoghurt", "yogurt", "joghurt",
+    ],
+    "vegetarian": [
+        "gelatin", "gelatine", "schweinegelatine", "speisegelatine",
+        "pork", "schwein", "beef", "rind", "lard", "schmalz", "tallow", "carmine", "karmin",
+    ],
+    "no_gelatin": ["gelatin", "gelatine", "schweinegelatine", "speisegelatine"],
+    "gelatin": ["gelatin", "gelatine", "schweinegelatine", "speisegelatine"],
+    "pork": ["pork", "swine", "schwein", "schweinegelatine", "gelatin", "gelatine", "lard", "schmalz", "bacon", "speck"],
+    "halal": [
+        "pork", "swine", "schwein", "schweinegelatine", "gelatin", "gelatine", "speisegelatine",
+        "lard", "schmalz", "alcohol", "alkohol", "ethanol", "rum", "wine", "wein", "beer", "bier",
+        "liqueur", "likör", "carmine", "karmin",
+    ],
+    "kosher": ["pork", "swine", "schwein", "gelatin", "gelatine", "lard", "shellfish"],
+    "peanuts": ["peanut", "peanuts", "groundnut", "arachis", "erdnuss", "erdnüsse", "erdnussbutter"],
+    "tree_nuts": [
+        "hazelnut", "haselnuss", "haselnüsse", "almond", "mandel", "mandeln",
+        "walnut", "walnuss", "cashew", "pecan", "pistachio", "pistazie",
+        "macadamia", "brazil nut", "tree nut", "schalenfrüchte",
+    ],
+    "hazelnuts": ["hazelnut", "hazelnuts", "filbert", "haselnuss", "haselnüsse"],
+    "nuts": [
+        "peanut", "erdnuss", "erdnüsse", "hazelnut", "haselnuss", "haselnüsse",
+        "almond", "mandel", "walnut", "walnuss", "cashew", "pecan", "pistachio", "nut", "nuss", "nüsse",
+    ],
+    "milk": [
+        "milk", "milch", "magermilch", "vollmilch", "whey", "molke", "süßmolke",
+        "lactose", "laktose", "milchzucker", "casein", "butter", "butterreinfett",
+        "cream", "sahne", "yoghurt", "yogurt", "joghurt", "dairy",
+    ],
+    "dairy": [
+        "milk", "milch", "magermilch", "vollmilch", "whey", "molke", "süßmolke",
+        "lactose", "laktose", "milchzucker", "casein", "butter", "butterreinfett",
+        "cream", "sahne", "yoghurt", "yogurt", "joghurt", "dairy",
+    ],
+    "lactose": [
+        "lactose", "laktose", "milchzucker", "milk", "milch", "magermilch", "vollmilch",
+        "whey", "molke", "cream", "sahne", "butter", "yoghurt", "yogurt", "joghurt",
+    ],
+    "eggs": ["egg", "eggs", "albumin", "lysozyme", "hühnerei", "trockeneiweiß", "eigelb", "eiweiß"],
+    "soy": ["soy", "soya", "soybean", "soja", "sojalecithin", "sojalecithine"],
+    "wheat": ["wheat", "weizen", "weizenmehl", "spelt", "dinkel", "semolina", "hartweizen", "durum"],
+    "gluten": [
+        "wheat", "weizen", "weizenmehl", "barley", "gerste", "gerstenmalz",
+        "rye", "roggen", "malt", "malz", "gluten", "spelt", "dinkel", "triticale", "hafer",
+    ],
+    "fructose": ["fructose", "fruktose", "fruchtzucker", "high fructose corn syrup", "fruit juice", "fruchtsaft", "sugar", "zucker", "sucrose", "honey", "honig", "agave"],
+    "sugar_free": ["sugar", "zucker", "sucrose", "saccharose", "glucose syrup", "glukosesirup", "corn syrup", "dextrose", "fructose", "invert sugar", "invertzucker", "maltose", "honey", "honig"],
 }
 
 
 def load_products() -> list[dict[str, Any]]:
-    """Load the verified candy product database."""
+    """Load the verified product database."""
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -84,7 +118,7 @@ PRODUCTS_DB: list[dict[str, Any]] = load_products()
 
 
 def extract_restrictions_from_text(text: str) -> list[str]:
-    """Extract canonical restriction tags from natural-language text."""
+    """Extract canonical restriction tags from natural-language text (English & German)."""
     if not text:
         return []
     lowered = text.lower()
@@ -114,7 +148,6 @@ def build_dietary_profile(
         if norm not in parsed:
             parsed.append(norm)
 
-    # If user explicitly chose "eat_everything" and listed no other restrictions, keep only eat_everything
     if "eat_everything" in parsed and len(parsed) > 1:
         parsed = [r for r in parsed if r != "eat_everything"]
 
@@ -242,7 +275,7 @@ def _classify_raw_ingredient_list(
     raw_ingredients: list[str],
     restrictions: list[str],
 ) -> list[str]:
-    """Check OCR-extracted or user-typed ingredient list against active restrictions."""
+    """Check OCR-extracted or user-typed ingredient list (EN/DE) against active restrictions."""
     active_restrictions = [r for r in restrictions if r != "eat_everything"]
     if not active_restrictions:
         return []
@@ -256,7 +289,7 @@ def _classify_raw_ingredient_list(
             ing_lower = ing.lower()
             for kw in keywords:
                 if kw in ing_lower:
-                    conflicts.append(f"{ing} (matches '{restriction}')")
+                    conflicts.append(f"{ing} (conflicts with '{restriction}')")
                     break
     return list(dict.fromkeys(conflicts))
 
@@ -275,7 +308,7 @@ def classify_product_for_session(
     now_iso = datetime.now(timezone.utc).isoformat()
     reasons = list(uncertainty_reasons or [])
 
-    # CASE 1: User provided explicit ingredient text OR Gemma read the back-of-pack ingredient list via OCR!
+    # CASE 1: User provided explicit ingredient text OR Gemma read the back-of-pack ingredient list via OCR
     cleaned_custom_ingredients = [
         i.strip() for i in (ocr_or_typed_ingredients or []) if i and i.strip()
     ]
@@ -301,7 +334,7 @@ def classify_product_for_session(
                 identification_status=IdentificationStatus.IDENTIFIED,
                 ingredient_source=source,
                 classification=ClassificationStatus.RED,
-                headline=f"NOT RECOMMENDED! Conflicts found on label",
+                headline="NOT RECOMMENDED! Conflicts found on label",
                 conflicting_ingredients=conflicts,
                 verified_ingredients=cleaned_custom_ingredients,
                 allergen_warnings=[],
@@ -353,12 +386,12 @@ def classify_product_for_session(
             ),
         )
 
-    # CASE 2: Lookup in our 15-product verified database
+    # CASE 2: Lookup in our 20-product verified database
     verified_entry = find_verified_product(
         recognized.product_id or recognized.name
     )
 
-    # CASE 3: Front of an unknown product (e.g. water bottle or snack not in DB) -> Ask user to turn it around!
+    # CASE 3: Front of an unknown product -> Ask user to turn it around!
     if (
         identification_status == IdentificationStatus.NEEDS_INGREDIENT_LABEL
         or (verified_entry is None and identification_status == IdentificationStatus.IDENTIFIED)
@@ -444,7 +477,7 @@ def classify_product_for_session(
             ),
         )
 
-    # CASE 5: Matched in our Verified 15-Product Database
+    # CASE 5: Matched in our Verified 20-Product Database
     canonical_product = RecognizedProduct(
         product_id=verified_entry["product_id"],
         name=verified_entry["name"],
@@ -503,7 +536,6 @@ def classify_product_for_session(
             ),
         )
 
-    # GREEN classification (never claim "allergy-safe")
     active_list = (
         ", ".join(dietary_profile.parsed_restrictions)
         if dietary_profile.parsed_restrictions

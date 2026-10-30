@@ -15,19 +15,19 @@
     ],
     "visual_cues": "Gold/yellow plastic bag, red HARIBO logo at top, yellow cartoon bear wearing red bowtie, translucent window showing colorful gummy bears.",
     "verified_ingredients": [
-      "Glucose syrup",
-      "Sugar",
-      "Gelatin (Pork-derived)",
+      "Glucose syrup (Glukosesirup)",
+      "Sugar (Zucker)",
+      "Gelatin / Pork-derived (Gelatine vom Schwein)",
       "Dextrose",
       "Fruit juice from concentrate (apple, strawberry, raspberry, orange, lemon, pineapple)",
-      "Citric acid",
+      "Citric acid (Säuerungsmittel: Citronensäure)",
       "Fruit and plant concentrates (safflower, spirulina, apple, elderberry, orange, blackcurrant, kiwi, lemon, aronia, mango, passion fruit, grape)",
       "Natural and artificial flavors",
-      "Glazing agents (Beeswax white and yellow, Carnauba wax)"
+      "Glazing agents (Beeswax white and yellow / Bienenwachs, Carnauba wax)"
     ],
     "allergens": [],
     "allergen_warnings": [
-      "May contain traces of milk and wheat"
+      "May contain traces of milk and wheat (Kann Spuren von Milch und Weizen enthalten)"
     ],
     "dietary_flags": {
       "vegan": false,
@@ -40,13 +40,13 @@
       "gluten_free": false
     },
     "conflict_triggers": {
-      "vegan": ["Gelatin (Pork-derived)", "Glazing agents (Beeswax white and yellow)"],
-      "vegetarian": ["Gelatin (Pork-derived)"],
-      "no_gelatin": ["Gelatin (Pork-derived)"],
-      "gelatin": ["Gelatin (Pork-derived)"],
-      "pork": ["Gelatin (Pork-derived)"],
-      "halal": ["Gelatin (Pork-derived)"],
-      "kosher": ["Gelatin (Pork-derived)"],
+      "vegan": ["Gelatin / Pork-derived (Gelatine)", "Glazing agents (Beeswax / Bienenwachs)"],
+      "vegetarian": ["Gelatin / Pork-derived (Gelatine)"],
+      "no_gelatin": ["Gelatin / Pork-derived (Gelatine)"],
+      "gelatin": ["Gelatin / Pork-derived (Gelatine)"],
+      "pork": ["Gelatin / Pork-derived (Gelatine vom Schwein)"],
+      "halal": ["Gelatin / Pork-derived (Gelatine vom Schwein)"],
+      "kosher": ["Gelatin / Pork-derived (Gelatine vom Schwein)"],
       "gluten": ["May contain traces of wheat (cross-contact warning)"],
       "wheat": ["May contain traces of wheat (cross-contact warning)"],
       "dairy": ["May contain traces of milk (cross-contact warning)"],
@@ -68,14 +68,14 @@
     "visual_cues": "Dark brown wrapper with bold blue SNICKERS text inside a white parallelogram with red border.",
     "verified_ingredients": [
       "Milk chocolate (Sugar, Cocoa butter, Chocolate, Skim milk, Lactose, Milkfat, Soy lecithin)",
-      "Peanuts",
-      "Corn syrup",
-      "Sugar",
+      "Peanuts (Erdnüsse)",
+      "Corn syrup (Glukosesirup)",
+      "Sugar (Zucker)",
       "Palm oil",
-      "Skim milk",
-      "Lactose",
+      "Skim milk (Magermilchpulver)",
+      "Lactose (Milchzucker)",
       "Salt",
-      "Egg whites",
+      "Egg whites (Hühnerei-Trockeneiweiß)",
       "Artificial flavor"
     ],
     "allergens": [
@@ -87,7 +87,7 @@
       "soy"
     ],
     "allergen_warnings": [
-      "May contain tree nuts"
+      "May contain tree nuts (Kann Haselnüsse enthalten)"
     ],
     "dietary_flags": {
       "vegan": false,
@@ -100,14 +100,14 @@
       "gluten_free": true
     },
     "conflict_triggers": {
-      "peanuts": ["Peanuts"],
-      "nuts": ["Peanuts", "May contain tree nuts"],
+      "peanuts": ["Peanuts (Erdnüsse)"],
+      "nuts": ["Peanuts (Erdnüsse)", "May contain tree nuts"],
       "tree_nuts": ["May contain tree nuts"],
-      "milk": ["Skim milk", "Lactose", "Milkfat"],
-      "dairy": ["Skim milk", "Lactose", "Milkfat"],
+      "milk": ["Skim milk (Magermilchpulver)", "Lactose", "Milkfat"],
+      "dairy": ["Skim milk (Magermilchpulver)", "Lactose", "Milkfat"],
       "lactose": ["Lactose", "Skim milk", "Milkfat"],
-      "eggs": ["Egg whites"],
-      "soy": ["Soy lecithin"],
+      "eggs": ["Egg whites (Hühnerei-Trockeneiweiß)"],
+      "soy": ["Soy lecithin (Sojalecithin)"],
       "vegan": ["Skim milk", "Lactose", "Milkfat", "Egg whites"]
     }
   },
@@ -126,10 +126,10 @@
     ],
     "visual_cues": "Silver stand-up foil drink pouch with blue/orange Capri-Sun logo and tropical fruits splashed with water.",
     "verified_ingredients": [
-      "Spring water",
+      "Spring water (Quellwasser)",
       "Fruit juice from concentrate 12% (lemon, orange, apple, grapefruit, pineapple, banana, kiwi, passion fruit, lime)",
-      "Sugar",
-      "Citric acid",
+      "Sugar (Zucker)",
+      "Citric acid (Citronensäure)",
       "Natural flavoring",
       "Antioxidant (Ascorbic acid)",
       "Vitamins (Vitamin C, Niacin, Vitamin E, Vitamin B6, Thiamin, Biotin, Vitamin B12)"
@@ -148,7 +148,7 @@
     },
     "conflict_triggers": {
       "fructose": ["Fruit juice from concentrate 12%", "Sugar"],
-      "sugar_free": ["Sugar"]
+      "sugar_free": ["Sugar (Zucker)"]
     }
   },
   {
@@ -166,13 +166,13 @@
     "visual_cues": "Bright yellow pouch with big brown 'm&m's' logo, 'PEANUT' banner, and yellow cartoon M&M character.",
     "verified_ingredients": [
       "Milk chocolate (Sugar, Chocolate, Skim milk, Cocoa butter, Lactose, Milkfat, Peanuts, Soy lecithin, Salt, Artificial and natural flavors)",
-      "Peanuts",
-      "Sugar",
+      "Peanuts (Erdnüsse)",
+      "Sugar (Zucker)",
       "Cornstarch",
       "Palm oil",
       "Corn syrup",
       "Dextrin",
-      "Coloring (Includes Blue 1 Lake, Red 40, Yellow 6, Yellow 5, Blue 1, Red 40 Lake, Yellow 6 Lake, Yellow 5 Lake, Blue 2 Lake, Blue 2)",
+      "Coloring",
       "Carnauba wax",
       "Gum acacia"
     ],
@@ -184,7 +184,7 @@
       "soy"
     ],
     "allergen_warnings": [
-      "May contain tree nuts"
+      "May contain tree nuts (Kann Haselnüsse und Mandeln enthalten)"
     ],
     "dietary_flags": {
       "vegan": false,
@@ -197,8 +197,8 @@
       "gluten_free": true
     },
     "conflict_triggers": {
-      "peanuts": ["Peanuts"],
-      "nuts": ["Peanuts", "May contain tree nuts"],
+      "peanuts": ["Peanuts (Erdnüsse)"],
+      "nuts": ["Peanuts (Erdnüsse)", "May contain tree nuts"],
       "tree_nuts": ["May contain tree nuts"],
       "milk": ["Skim milk", "Lactose", "Milkfat"],
       "dairy": ["Skim milk", "Lactose", "Milkfat"],
@@ -220,16 +220,16 @@
     ],
     "visual_cues": "Bright red bag with white 'Skittles' lettering, rainbow arc, and colorful fruit-flavored lentil candies cascading.",
     "verified_ingredients": [
-      "Sugar",
-      "Corn syrup",
-      "Hydrogenated palm kernel oil",
-      "Citric acid",
+      "Sugar (Zucker)",
+      "Corn syrup (Glukosesirup)",
+      "Hydrogenated palm kernel oil (Palmfett)",
+      "Citric acid (Citronensäure)",
       "Tapioca dextrin",
       "Modified corn starch",
       "Natural and artificial flavors",
-      "Colors (Red 40 Lake, Yellow 5 Lake, Blue 2 Lake, Yellow 6 Lake, Titanium dioxide, Red 40, Yellow 5, Yellow 6, Blue 1)",
+      "Colors",
       "Sodium citrate",
-      "Carnauba wax"
+      "Carnauba wax (Carnaubawachs)"
     ],
     "allergens": [],
     "allergen_warnings": [],
@@ -262,11 +262,11 @@
     "visual_cues": "Vibrant orange wrapper with yellow 'Reese's' crown-style script logo with brown outline.",
     "verified_ingredients": [
       "Milk chocolate (Sugar, Cocoa butter, Chocolate, Skim milk, Milkfat, Lactose, Lecithin (Soy), PGPR)",
-      "Peanuts",
+      "Peanuts (Erdnüsse)",
       "Sugar",
       "Dextrose",
       "Salt",
-      "TBHQ and Citric acid (to maintain freshness)"
+      "TBHQ and Citric acid"
     ],
     "allergens": [
       "peanuts",
@@ -287,8 +287,8 @@
       "gluten_free": true
     },
     "conflict_triggers": {
-      "peanuts": ["Peanuts"],
-      "nuts": ["Peanuts"],
+      "peanuts": ["Peanuts (Erdnüsse)"],
+      "nuts": ["Peanuts (Erdnüsse)"],
       "milk": ["Skim milk", "Milkfat", "Lactose"],
       "dairy": ["Skim milk", "Milkfat", "Lactose"],
       "lactose": ["Lactose", "Skim milk", "Milkfat"],
@@ -311,13 +311,13 @@
     "visual_cues": "Bright red wrapper with angled white oval logo reading 'KitKat' in red and brown chocolate wafer fingers.",
     "verified_ingredients": [
       "Sugar",
-      "Wheat flour",
-      "Skim milk",
+      "Wheat flour (Weizenmehl)",
+      "Skim milk (Magermilchpulver)",
       "Cocoa butter",
       "Cocoa mass",
       "Vegetable oils (Palm, Shea)",
-      "Butterfat (Milk)",
-      "Lactose and proteins from whey (Milk)",
+      "Butterfat (Butterreinfett / Milk)",
+      "Lactose and proteins from whey (Molkenراسةerzeugnis)",
       "Fat-reduced cocoa powder",
       "Emulsifier (Lecithins - Soy/Sunflower)",
       "Yeast",
@@ -345,8 +345,8 @@
       "gluten_free": false
     },
     "conflict_triggers": {
-      "wheat": ["Wheat flour"],
-      "gluten": ["Wheat flour"],
+      "wheat": ["Wheat flour (Weizenmehl)"],
+      "gluten": ["Wheat flour (Weizenmehl)"],
       "milk": ["Skim milk", "Butterfat (Milk)", "Lactose and proteins from whey (Milk)"],
       "dairy": ["Skim milk", "Butterfat (Milk)", "Lactose and proteins from whey (Milk)"],
       "lactose": ["Lactose and proteins from whey (Milk)", "Skim milk", "Butterfat (Milk)"],
@@ -372,15 +372,15 @@
     "visual_cues": "Shiny metallic gold wrapper with red 'TWIX' lettering and two pause-mark dots inside the X.",
     "verified_ingredients": [
       "Milk chocolate (Sugar, Cocoa butter, Chocolate, Skim milk, Lactose, Milkfat, Soy lecithin, PGPR)",
-      "Enriched wheat flour (Wheat flour, Niacin, Reduced iron, Thiamine mononitrate, Riboflavin, Folic acid)",
+      "Enriched wheat flour (Weizenmehl)",
       "Sugar",
       "Palm oil",
       "Corn syrup",
-      "Skim milk",
+      "Skim milk (Magermilchpulver)",
       "Dextrose",
       "Salt",
       "Cocoa powder",
-      "Soy lecithin",
+      "Soy lecithin (Sojalecithin)",
       "Modified corn starch",
       "Baking soda",
       "Artificial flavor"
@@ -394,7 +394,7 @@
       "soy"
     ],
     "allergen_warnings": [
-      "May contain peanuts"
+      "May contain peanuts and hazelnuts"
     ],
     "dietary_flags": {
       "vegan": false,
@@ -407,8 +407,8 @@
       "gluten_free": false
     },
     "conflict_triggers": {
-      "wheat": ["Enriched wheat flour"],
-      "gluten": ["Enriched wheat flour"],
+      "wheat": ["Enriched wheat flour (Weizenmehl)"],
+      "gluten": ["Enriched wheat flour (Weizenmehl)"],
       "milk": ["Skim milk", "Lactose", "Milkfat"],
       "dairy": ["Skim milk", "Lactose", "Milkfat"],
       "lactose": ["Lactose", "Skim milk", "Milkfat"],
@@ -432,14 +432,14 @@
     ],
     "visual_cues": "Blue wrapper with white 'OREO' logo and dark chocolate sandwich cookie splashing into milk.",
     "verified_ingredients": [
-      "Unbleached enriched flour (Wheat flour, Niacin, Reduced iron, Thiamine mononitrate, Riboflavin, Folic acid)",
-      "Sugar",
+      "Unbleached enriched flour (Wheat flour / Weizenmehl)",
+      "Sugar (Zucker)",
       "Palm and/or canola oil",
       "Cocoa (processed with alkali)",
       "High fructose corn syrup",
       "Leavening (Baking soda and/or calcium phosphate)",
       "Salt",
-      "Soy lecithin",
+      "Soy lecithin (Sojalecithine)",
       "Chocolate",
       "Artificial flavor (Vanillin)"
     ],
@@ -449,7 +449,7 @@
       "soy"
     ],
     "allergen_warnings": [
-      "May contain traces of milk (shared equipment in some regions)"
+      "May contain traces of milk (Kann Spuren von Milch enthalten)"
     ],
     "dietary_flags": {
       "vegan": true,
@@ -462,9 +462,9 @@
       "gluten_free": false
     },
     "conflict_triggers": {
-      "wheat": ["Unbleached enriched flour (Wheat flour)"],
-      "gluten": ["Unbleached enriched flour (Wheat flour)"],
-      "soy": ["Soy lecithin"]
+      "wheat": ["Unbleached enriched flour (Wheat flour / Weizenmehl)"],
+      "gluten": ["Unbleached enriched flour (Wheat flour / Weizenmehl)"],
+      "soy": ["Soy lecithin (Sojalecithine)"]
     }
   },
   {
@@ -519,13 +519,13 @@
     ],
     "visual_cues": "Colorful wrapper with yellow-and-green 'MAOAM' logo and green cartoon fruit character.",
     "verified_ingredients": [
-      "Sugar",
-      "Glucose syrup",
-      "Palm fat",
+      "Sugar (Zucker)",
+      "Glucose syrup (Glukosesirup)",
+      "Palm fat (Palmfett)",
       "Humectant (Sorbitol syrup)",
-      "Gelatin (Pork-derived)",
-      "Citric acid",
-      "Flavoring"
+      "Gelatin / Pork-derived (Gelatine)",
+      "Citric acid (Citronensäure)",
+      "Flavoring (Aroma)"
     ],
     "allergens": [],
     "allergen_warnings": [],
@@ -540,13 +540,13 @@
       "gluten_free": true
     },
     "conflict_triggers": {
-      "vegan": ["Gelatin (Pork-derived)"],
-      "vegetarian": ["Gelatin (Pork-derived)"],
-      "no_gelatin": ["Gelatin (Pork-derived)"],
-      "gelatin": ["Gelatin (Pork-derived)"],
-      "pork": ["Gelatin (Pork-derived)"],
-      "halal": ["Gelatin (Pork-derived)"],
-      "kosher": ["Gelatin (Pork-derived)"]
+      "vegan": ["Gelatin / Pork-derived (Gelatine)"],
+      "vegetarian": ["Gelatin / Pork-derived (Gelatine)"],
+      "no_gelatin": ["Gelatin / Pork-derived (Gelatine)"],
+      "gelatin": ["Gelatin / Pork-derived (Gelatine)"],
+      "pork": ["Gelatin / Pork-derived (Gelatine)"],
+      "halal": ["Gelatin / Pork-derived (Gelatine)"],
+      "kosher": ["Gelatin / Pork-derived (Gelatine)"]
     }
   },
   {
@@ -565,14 +565,14 @@
       "Milk chocolate 31.5% (Sugar, Cocoa butter, Cocoa mass, Skimmed milk powder, Concentrated butter, Emulsifier: Lecithins (Soy), Vanillin)",
       "Sugar",
       "Palm oil",
-      "Wheat flour",
-      "Hazelnuts (10.8%)",
-      "Skimmed milk powder",
-      "Whole milk powder",
-      "Chocolate (Sugar, Cocoa mass, Cocoa butter, Emulsifier: Lecithins (Soy), Vanillin)",
+      "Wheat flour (Weizenmehl)",
+      "Hazelnuts 10.8% (Haselnüsse)",
+      "Skimmed milk powder (Magermilchpulver)",
+      "Whole milk powder (Vollmilchpulver)",
+      "Chocolate",
       "Fat-reduced cocoa",
-      "Emulsifier: Lecithins (Soy)",
-      "Raising agents (Sodium bicarbonate, Ammonium bicarbonate)",
+      "Emulsifier: Lecithins (Soy / Soja)",
+      "Raising agents",
       "Salt",
       "Vanillin"
     ],
@@ -598,14 +598,14 @@
       "gluten_free": false
     },
     "conflict_triggers": {
-      "tree_nuts": ["Hazelnuts (10.8%)"],
-      "nuts": ["Hazelnuts (10.8%)"],
-      "hazelnuts": ["Hazelnuts (10.8%)"],
+      "tree_nuts": ["Hazelnuts 10.8% (Haselnüsse)"],
+      "nuts": ["Hazelnuts 10.8% (Haselnüsse)"],
+      "hazelnuts": ["Hazelnuts 10.8% (Haselnüsse)"],
       "milk": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"],
       "dairy": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"],
       "lactose": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"],
-      "wheat": ["Wheat flour"],
-      "gluten": ["Wheat flour"],
+      "wheat": ["Wheat flour (Weizenmehl)"],
+      "gluten": ["Wheat flour (Weizenmehl)"],
       "soy": ["Emulsifier: Lecithins (Soy)"],
       "vegan": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"]
     }
@@ -623,14 +623,14 @@
     ],
     "visual_cues": "Pink and white bag with red 'Katjes' logo, green 'Veggie / Ohne Tierische Gelatine' badge, and fruit-and-yogurt gummies.",
     "verified_ingredients": [
-      "Sugar",
-      "Glucose syrup",
-      "Skimmed milk yoghurt powder (5.5%)",
+      "Sugar (Zucker)",
+      "Glucose syrup (Glukosesirup)",
+      "Skimmed milk yoghurt powder 5.5% (Magermilchjoghurtpulver)",
       "Apple puree",
-      "Gelling agent (Pectins)",
+      "Gelling agent (Pectins / Pektin)",
       "Acids (Citric acid, Malic acid, Lactic acid)",
-      "Hydrolysed milk protein",
-      "Fruit and plant concentrates (red potato, safflower, radish, apple, lemon, blackcurrant)",
+      "Hydrolysed milk protein (Milcheiweiß)",
+      "Fruit and plant concentrates",
       "Natural flavorings",
       "Vegetable oil (Sunflower)",
       "Glazing agent (Carnauba wax)"
@@ -660,34 +660,31 @@
   },
   {
     "product_id": "trolli-sour-glowworms",
-    "name": "Trolli Sour Brite Crawlers (Sour Glowworms)",
+    "name": "Trolli Sour Brite Crawlers (Sour Glowworms / Glühwürmchen)",
     "brand": "Trolli",
     "category": "gummy_candy",
     "aliases": [
       "trolli",
       "trolli sour glowworms",
+      "trolli glühwürmchen",
       "trolli sour brite crawlers",
       "trolli gummy worms",
       "sour glowworms"
     ],
     "visual_cues": "Blue/neon bag with red-and-yellow 'Trolli' logo and two-tone neon sugar-dusted gummy worms.",
     "verified_ingredients": [
-      "Corn syrup",
-      "Sugar",
-      "Gelatin (Pork/Beef-derived)",
+      "Corn syrup (Glukosesirup)",
+      "Sugar (Zucker)",
+      "Gelatin / Pork-Beef-derived (Gelatine)",
       "Modified food starch (corn)",
       "Fumaric acid",
       "Lactic acid",
       "Citric acid",
       "Sodium citrate",
       "Calcium lactate",
-      "Sodium lactate",
       "Natural and artificial flavors",
       "Titanium dioxide",
-      "Red 40",
-      "Yellow 5",
-      "Yellow 6",
-      "Blue 1"
+      "Colors"
     ],
     "allergens": [],
     "allergen_warnings": [
@@ -730,13 +727,13 @@
       "Corn syrup",
       "Sugar",
       "Palm oil",
-      "Skim milk",
+      "Skim milk (Magermilchpulver)",
       "Milkfat",
       "Cocoa powder processed with alkali",
-      "Barley malt extract",
+      "Barley malt extract (Gerstenmalzextrakt)",
       "Lactose",
       "Salt",
-      "Egg whites",
+      "Egg whites (Hühnerei-Trockeneiweiß)",
       "Chocolate",
       "Artificial flavor"
     ],
@@ -750,7 +747,7 @@
       "gluten"
     ],
     "allergen_warnings": [
-      "May contain peanuts"
+      "May contain peanuts and hazelnuts"
     ],
     "dietary_flags": {
       "vegan": false,
@@ -768,11 +765,233 @@
       "lactose": ["Lactose", "Skim milk", "Milkfat"],
       "eggs": ["Egg whites"],
       "soy": ["Soy lecithin"],
-      "gluten": ["Barley malt extract"],
-      "barley": ["Barley malt extract"],
+      "gluten": ["Barley malt extract (Gerstenmalzextrakt)"],
+      "barley": ["Barley malt extract (Gerstenmalzextrakt)"],
       "peanuts": ["May contain peanuts (cross-contact warning)"],
       "nuts": ["May contain peanuts (cross-contact warning)"],
       "vegan": ["Skim milk", "Lactose", "Milkfat", "Egg whites"]
+    }
+  },
+  {
+    "product_id": "voeslauer-mineralwasser",
+    "name": "Vöslauer Natürliches Mineralwasser",
+    "brand": "Vöslauer",
+    "category": "beverage_pouch",
+    "aliases": [
+      "vöslauer",
+      "voeslauer",
+      "vöslauer wasser",
+      "vöslauer ohne",
+      "vöslauer prickelnd",
+      "mineral water",
+      "evian"
+    ],
+    "visual_cues": "Clear/blue PET bottle with blue wave logo reading 'Vöslauer' natural mineral water.",
+    "verified_ingredients": [
+      "Natural Mineral Water (Natürliches Mineralwasser)",
+      "Carbonic acid / CO2 (Kohlensäure - in sparkling varieties)"
+    ],
+    "allergens": [],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {}
+  },
+  {
+    "product_id": "red-bull-energy",
+    "name": "Red Bull Energy Drink",
+    "brand": "Red Bull",
+    "category": "beverage_pouch",
+    "aliases": [
+      "red bull",
+      "redbull",
+      "red bull energy",
+      "red bull dose"
+    ],
+    "visual_cues": "Blue and silver slim aluminum can with two red charging bulls in front of a yellow sun.",
+    "verified_ingredients": [
+      "Water (Wasser)",
+      "Sucrose (Saccharose)",
+      "Glucose (Glukose)",
+      "Citric acid (Säuerungsmittel Citronensäure)",
+      "Carbonic acid (Kohlensäure)",
+      "Taurine 0.4% (Synthetic / Vegan)",
+      "Acidity regulators (Sodium carbonates, Magnesium carbonates)",
+      "Caffeine 0.03% (Koffein)",
+      "Vitamins (Niacin, Pantothenic acid, B6, B12)",
+      "Flavorings (Aromen)",
+      "Colors (Caramel, Riboflavins)"
+    ],
+    "allergens": [],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "sugar_free": ["Sucrose (Saccharose)", "Glucose (Glukose)"]
+    }
+  },
+  {
+    "product_id": "nutella-original",
+    "name": "Ferrero Nutella Hazelnut Cocoa Spread",
+    "brand": "Ferrero",
+    "category": "chocolate_candy",
+    "aliases": [
+      "nutella",
+      "ferrero nutella",
+      "nutella b-ready",
+      "nutella & go"
+    ],
+    "visual_cues": "Clear jar with white label, black 'n' and red 'utella' lettering.",
+    "verified_ingredients": [
+      "Sugar (Zucker)",
+      "Palm oil (Palmöl)",
+      "Hazelnuts 13% (Haselnüsse)",
+      "Skimmed milk powder 8.7% (Magermilchpulver)",
+      "Fat-reduced cocoa 7.4% (fettarmer Kakao)",
+      "Emulsifier: Lecithins (Soy / Soja)",
+      "Vanillin"
+    ],
+    "allergens": [
+      "tree_nuts",
+      "hazelnuts",
+      "milk",
+      "dairy",
+      "lactose",
+      "soy"
+    ],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "tree_nuts": ["Hazelnuts 13% (Haselnüsse)"],
+      "nuts": ["Hazelnuts 13% (Haselnüsse)"],
+      "hazelnuts": ["Hazelnuts 13% (Haselnüsse)"],
+      "milk": ["Skimmed milk powder 8.7% (Magermilchpulver)"],
+      "dairy": ["Skimmed milk powder 8.7% (Magermilchpulver)"],
+      "lactose": ["Skimmed milk powder 8.7% (Magermilchpulver)"],
+      "soy": ["Emulsifier: Lecithins (Soy / Soja)"],
+      "vegan": ["Skimmed milk powder 8.7% (Magermilchpulver)"]
+    }
+  },
+  {
+    "product_id": "pringles-original",
+    "name": "Pringles Original Crisps",
+    "brand": "Pringles / Kellanova",
+    "category": "cookie",
+    "aliases": [
+      "pringles",
+      "pringles original",
+      "red pringles"
+    ],
+    "visual_cues": "Red cylindrical tube with mustachioed Julius Pringles mascot.",
+    "verified_ingredients": [
+      "Dehydrated potatoes (Kartoffelpüreepulver)",
+      "Vegetable oils (Sunflower, Palm, Corn)",
+      "Wheat flour (Weizenmehl)",
+      "Corn flour (Maismehl)",
+      "Rice flour (Reismehl)",
+      "Maltodextrin",
+      "Emulsifier (E471)",
+      "Salt (Salz)",
+      "Color (Annatto norbixin)"
+    ],
+    "allergens": [
+      "wheat",
+      "gluten"
+    ],
+    "allergen_warnings": [
+      "May contain soy and milk"
+    ],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "wheat": ["Wheat flour (Weizenmehl)"],
+      "gluten": ["Wheat flour (Weizenmehl)"]
+    }
+  },
+  {
+    "product_id": "manner-neapolitaner",
+    "name": "Manner Original Neapolitaner Schnitten (Wafers)",
+    "brand": "Manner (Wien)",
+    "category": "chocolate_wafer",
+    "aliases": [
+      "manner",
+      "manner schnitten",
+      "manner wafers",
+      "manner neapolitaner",
+      "rosa manner"
+    ],
+    "visual_cues": "Signature salmon-pink square foil pack with blue 'Manner' script logo and St. Stephen's Cathedral icon.",
+    "verified_ingredients": [
+      "Sugar (Zucker)",
+      "Wheat flour (Weizenmehl)",
+      "Coconut oil and palm fat (Kokosfett, Palmfett)",
+      "Hazelnuts 12% in cream (Haselnüsse)",
+      "Fat-reduced cocoa powder (mageres Kakaopulver)",
+      "Raising agent (Sodium hydrogen carbonate)",
+      "Salt",
+      "Emulsifier (Soy lecithin / Sojalecithine)",
+      "Natural flavorings"
+    ],
+    "allergens": [
+      "wheat",
+      "gluten",
+      "tree_nuts",
+      "hazelnuts",
+      "soy"
+    ],
+    "allergen_warnings": [
+      "May contain traces of milk (Kann Spuren von Milchbestandteilen enthalten)"
+    ],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "wheat": ["Wheat flour (Weizenmehl)"],
+      "gluten": ["Wheat flour (Weizenmehl)"],
+      "tree_nuts": ["Hazelnuts 12% (Haselnüsse)"],
+      "nuts": ["Hazelnuts 12% (Haselnüsse)"],
+      "hazelnuts": ["Hazelnuts 12% (Haselnüsse)"],
+      "soy": ["Emulsifier (Soy lecithin / Sojalecithine)"]
     }
   }
 ]

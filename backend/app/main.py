@@ -1,4 +1,4 @@
-"""Candy or Curse? — FastAPI Main Application (Team B)."""
+"""Candy or Curse? — FastAPI Main Application (Developer B2)."""
 import base64
 import re
 from typing import Any, Optional
@@ -20,7 +20,12 @@ from app.models.schemas import (
     SynthesizeResponse,
     TranscribeResponse,
 )
-from app.services.classifier import PRODUCTS_DB, classify_product_for_session
+from app.services.classifier import (
+    PRODUCTS_DB,
+    classify_product_for_session,
+    find_recommended_alternatives,
+    find_verified_product,
+)
 from app.services.gemma_service import chat_with_candy_keeper, recognize_candy_image
 from app.services.session_store import session_store
 from app.services.voice_service import synthesize_keeper_speech, transcribe_audio_bytes
@@ -31,7 +36,7 @@ app = FastAPI(
         "AI Food & Halloween Candy Scanner Backend powered by Gemma 4 Vision (Front-of-pack + Ingredient OCR), "
         "ElevenLabs Voice Coaching, Recommended Alternatives, and a Verified Ingredient Classification Engine."
     ),
-    version="1.1.0",
+    version="1.2.0",
 )
 
 app.add_middleware(
@@ -59,17 +64,27 @@ async def health_check() -> dict[str, Any]:
             "manual_ingredient_text_input",
             "recommended_alternatives",
             "live_stream_voice_coaching",
+            "session_disk_persistence",
         ],
     }
 
 
 @app.get("/api/products", tags=["Catalog"])
 async def list_verified_products() -> dict[str, Any]:
-    """Return the verified candy catalog (15 products) for reference and demo testing."""
+    """Return the verified product catalog (20 products) for reference and demo testing."""
     return {
         "count": len(PRODUCTS_DB),
         "products": PRODUCTS_DB,
     }
+
+
+@app.get("/api/products/{product_id}", tags=["Catalog"])
+async def get_verified_product_details(product_id: str) -> dict[str, Any]:
+    """Look up a specific product by ID or alias from the verified database."""
+    prod = find_verified_product(product_id)
+    if not prod:
+        raise HTTPException(status_code=404, detail=f"Product '{product_id}' not found in verified catalog")
+    return prod
 
 
 @app.post(
@@ -92,6 +107,22 @@ async def create_session(req: Optional[CreateSessionRequest] = None) -> SessionR
 async def get_session(session_id: str) -> SessionResponse:
     """Retrieve current session state, active dietary profile, and mobile scan history."""
     session = session_store.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+    return session
+
+
+@app.put(
+    "/api/sessions/{session_id}/preferences",
+    response_model=SessionResponse,
+    tags=["Sessions"],
+)
+async def update_session_preferences(
+    session_id: str,
+    req: CreateSessionRequest,
+) -> SessionResponse:
+    """Directly replace a session's dietary preferences and allergies (e.g. from onboarding buttons)."""
+    session = session_store.replace_preferences(session_id, req)
     if not session:
         raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
     return session
@@ -183,7 +214,15 @@ async def scan_candy(
             detail="Provide an 'image' file, 'image_base64', or 'ingredient_text_override'.",
         )
 
-    # If user typed/pasted an ingredient list directly without an image
+    # Strip leading "Zutaten:" or "Ingredients:" prefix if present in ingredient_text_override
+    if ingredient_text_override:
+        ingredient_text_override = re.sub(
+            r"^(?:zutaten|ingredients)\s*:\s*",
+            "",
+            ingredient_text_override.strip(),
+            flags=re.IGNORECASE,
+        )
+
     if ingredient_text_override and not image_bytes and not hint:
         typed_list = [
             tok.strip()
