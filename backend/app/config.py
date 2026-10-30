@@ -1,0 +1,36 @@
+"""Environment configuration for Candy or Curse backend."""
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load backend/.env or root .env if present
+BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = BASE_DIR.parent
+load_dotenv(BASE_DIR / ".env")
+load_dotenv(ROOT_DIR / ".env")
+
+
+class Settings:
+    """Server configuration loaded from environment variables."""
+
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "").strip()
+    GEMMA_MODEL: str = os.getenv("GEMMA_MODEL", "gemma-4-26b-a4b-it").strip()
+
+    ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "").strip()
+    ELEVENLABS_VOICE_ID: str = os.getenv("ELEVENLABS_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb").strip()
+    ELEVENLABS_TTS_MODEL: str = os.getenv("ELEVENLABS_TTS_MODEL", "eleven_flash_v2_5").strip()
+    ELEVENLABS_STT_MODEL: str = os.getenv("ELEVENLABS_STT_MODEL", "scribe_v1").strip()
+
+    BACKEND_HOST: str = os.getenv("BACKEND_HOST", "0.0.0.0")
+    BACKEND_PORT: int = int(os.getenv("BACKEND_PORT", "8000"))
+    PUBLIC_FRONTEND_URL: str = os.getenv(
+        "PUBLIC_FRONTEND_URL", "https://candy-or-curse.lovable.app"
+    ).rstrip("/")
+    CORS_ORIGINS: list[str] = [
+        origin.strip()
+        for origin in os.getenv("CORS_ORIGINS", "*").split(",")
+        if origin.strip()
+    ]
+
+
+settings = Settings()

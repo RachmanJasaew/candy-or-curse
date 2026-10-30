@@ -1,0 +1,778 @@
+[
+  {
+    "product_id": "haribo-goldbears",
+    "name": "Haribo Goldbears (Goldbären)",
+    "brand": "Haribo",
+    "category": "gummy_candy",
+    "aliases": [
+      "haribo",
+      "haribo goldbears",
+      "haribo goldbaren",
+      "haribo goldbären",
+      "goldbears",
+      "goldbären",
+      "haribo gummy bears"
+    ],
+    "visual_cues": "Gold/yellow plastic bag, red HARIBO logo at top, yellow cartoon bear wearing red bowtie, translucent window showing colorful gummy bears.",
+    "verified_ingredients": [
+      "Glucose syrup",
+      "Sugar",
+      "Gelatin (Pork-derived)",
+      "Dextrose",
+      "Fruit juice from concentrate (apple, strawberry, raspberry, orange, lemon, pineapple)",
+      "Citric acid",
+      "Fruit and plant concentrates (safflower, spirulina, apple, elderberry, orange, blackcurrant, kiwi, lemon, aronia, mango, passion fruit, grape)",
+      "Natural and artificial flavors",
+      "Glazing agents (Beeswax white and yellow, Carnauba wax)"
+    ],
+    "allergens": [],
+    "allergen_warnings": [
+      "May contain traces of milk and wheat"
+    ],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": false,
+      "contains_gelatin": true,
+      "contains_pork": true,
+      "contains_beeswax": true,
+      "halal_friendly": false,
+      "kosher_friendly": false,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "vegan": ["Gelatin (Pork-derived)", "Glazing agents (Beeswax white and yellow)"],
+      "vegetarian": ["Gelatin (Pork-derived)"],
+      "no_gelatin": ["Gelatin (Pork-derived)"],
+      "gelatin": ["Gelatin (Pork-derived)"],
+      "pork": ["Gelatin (Pork-derived)"],
+      "halal": ["Gelatin (Pork-derived)"],
+      "kosher": ["Gelatin (Pork-derived)"],
+      "gluten": ["May contain traces of wheat (cross-contact warning)"],
+      "wheat": ["May contain traces of wheat (cross-contact warning)"],
+      "dairy": ["May contain traces of milk (cross-contact warning)"],
+      "milk": ["May contain traces of milk (cross-contact warning)"]
+    }
+  },
+  {
+    "product_id": "snickers-original",
+    "name": "Snickers Original Chocolate Bar",
+    "brand": "Mars Wrigley",
+    "category": "chocolate_bar",
+    "aliases": [
+      "snickers",
+      "snickers bar",
+      "snickers original",
+      "snickers mini",
+      "snickers fun size"
+    ],
+    "visual_cues": "Dark brown wrapper with bold blue SNICKERS text inside a white parallelogram with red border.",
+    "verified_ingredients": [
+      "Milk chocolate (Sugar, Cocoa butter, Chocolate, Skim milk, Lactose, Milkfat, Soy lecithin)",
+      "Peanuts",
+      "Corn syrup",
+      "Sugar",
+      "Palm oil",
+      "Skim milk",
+      "Lactose",
+      "Salt",
+      "Egg whites",
+      "Artificial flavor"
+    ],
+    "allergens": [
+      "peanuts",
+      "milk",
+      "dairy",
+      "lactose",
+      "eggs",
+      "soy"
+    ],
+    "allergen_warnings": [
+      "May contain tree nuts"
+    ],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "peanuts": ["Peanuts"],
+      "nuts": ["Peanuts", "May contain tree nuts"],
+      "tree_nuts": ["May contain tree nuts"],
+      "milk": ["Skim milk", "Lactose", "Milkfat"],
+      "dairy": ["Skim milk", "Lactose", "Milkfat"],
+      "lactose": ["Lactose", "Skim milk", "Milkfat"],
+      "eggs": ["Egg whites"],
+      "soy": ["Soy lecithin"],
+      "vegan": ["Skim milk", "Lactose", "Milkfat", "Egg whites"]
+    }
+  },
+  {
+    "product_id": "capri-sun-multivitamin",
+    "name": "Capri-Sun Multivitamin",
+    "brand": "Capri-Sun",
+    "category": "beverage_pouch",
+    "aliases": [
+      "capri-sun",
+      "capri sun",
+      "capri-sun multivitamin",
+      "capri sun multivitamin",
+      "capri-sun orange",
+      "caprisun"
+    ],
+    "visual_cues": "Silver stand-up foil drink pouch with blue/orange Capri-Sun logo and tropical fruits splashed with water.",
+    "verified_ingredients": [
+      "Spring water",
+      "Fruit juice from concentrate 12% (lemon, orange, apple, grapefruit, pineapple, banana, kiwi, passion fruit, lime)",
+      "Sugar",
+      "Citric acid",
+      "Natural flavoring",
+      "Antioxidant (Ascorbic acid)",
+      "Vitamins (Vitamin C, Niacin, Vitamin E, Vitamin B6, Thiamin, Biotin, Vitamin B12)"
+    ],
+    "allergens": [],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "fructose": ["Fruit juice from concentrate 12%", "Sugar"],
+      "sugar_free": ["Sugar"]
+    }
+  },
+  {
+    "product_id": "mms-peanut",
+    "name": "M&M's Peanut Chocolate Candies",
+    "brand": "Mars Wrigley",
+    "category": "chocolate_candy",
+    "aliases": [
+      "m&m's peanut",
+      "m&ms peanut",
+      "mms peanut",
+      "yellow m&ms",
+      "m&m peanut"
+    ],
+    "visual_cues": "Bright yellow pouch with big brown 'm&m's' logo, 'PEANUT' banner, and yellow cartoon M&M character.",
+    "verified_ingredients": [
+      "Milk chocolate (Sugar, Chocolate, Skim milk, Cocoa butter, Lactose, Milkfat, Peanuts, Soy lecithin, Salt, Artificial and natural flavors)",
+      "Peanuts",
+      "Sugar",
+      "Cornstarch",
+      "Palm oil",
+      "Corn syrup",
+      "Dextrin",
+      "Coloring (Includes Blue 1 Lake, Red 40, Yellow 6, Yellow 5, Blue 1, Red 40 Lake, Yellow 6 Lake, Yellow 5 Lake, Blue 2 Lake, Blue 2)",
+      "Carnauba wax",
+      "Gum acacia"
+    ],
+    "allergens": [
+      "peanuts",
+      "milk",
+      "dairy",
+      "lactose",
+      "soy"
+    ],
+    "allergen_warnings": [
+      "May contain tree nuts"
+    ],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "peanuts": ["Peanuts"],
+      "nuts": ["Peanuts", "May contain tree nuts"],
+      "tree_nuts": ["May contain tree nuts"],
+      "milk": ["Skim milk", "Lactose", "Milkfat"],
+      "dairy": ["Skim milk", "Lactose", "Milkfat"],
+      "lactose": ["Lactose", "Skim milk", "Milkfat"],
+      "soy": ["Soy lecithin"],
+      "vegan": ["Skim milk", "Lactose", "Milkfat"]
+    }
+  },
+  {
+    "product_id": "skittles-original",
+    "name": "Skittles Original Fruit Candies",
+    "brand": "Mars Wrigley",
+    "category": "chewy_candy",
+    "aliases": [
+      "skittles",
+      "skittles original",
+      "skittles fruits",
+      "red skittles"
+    ],
+    "visual_cues": "Bright red bag with white 'Skittles' lettering, rainbow arc, and colorful fruit-flavored lentil candies cascading.",
+    "verified_ingredients": [
+      "Sugar",
+      "Corn syrup",
+      "Hydrogenated palm kernel oil",
+      "Citric acid",
+      "Tapioca dextrin",
+      "Modified corn starch",
+      "Natural and artificial flavors",
+      "Colors (Red 40 Lake, Yellow 5 Lake, Blue 2 Lake, Yellow 6 Lake, Titanium dioxide, Red 40, Yellow 5, Yellow 6, Blue 1)",
+      "Sodium citrate",
+      "Carnauba wax"
+    ],
+    "allergens": [],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "sugar_free": ["Sugar", "Corn syrup"]
+    }
+  },
+  {
+    "product_id": "reeses-peanut-butter-cups",
+    "name": "Reese's Milk Chocolate Peanut Butter Cups",
+    "brand": "Hershey's",
+    "category": "chocolate_candy",
+    "aliases": [
+      "reese's",
+      "reeses",
+      "reese's peanut butter cups",
+      "reeses cups",
+      "reese's cup"
+    ],
+    "visual_cues": "Vibrant orange wrapper with yellow 'Reese's' crown-style script logo with brown outline.",
+    "verified_ingredients": [
+      "Milk chocolate (Sugar, Cocoa butter, Chocolate, Skim milk, Milkfat, Lactose, Lecithin (Soy), PGPR)",
+      "Peanuts",
+      "Sugar",
+      "Dextrose",
+      "Salt",
+      "TBHQ and Citric acid (to maintain freshness)"
+    ],
+    "allergens": [
+      "peanuts",
+      "milk",
+      "dairy",
+      "lactose",
+      "soy"
+    ],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "peanuts": ["Peanuts"],
+      "nuts": ["Peanuts"],
+      "milk": ["Skim milk", "Milkfat", "Lactose"],
+      "dairy": ["Skim milk", "Milkfat", "Lactose"],
+      "lactose": ["Lactose", "Skim milk", "Milkfat"],
+      "soy": ["Lecithin (Soy)"],
+      "vegan": ["Skim milk", "Milkfat", "Lactose"]
+    }
+  },
+  {
+    "product_id": "kitkat-original",
+    "name": "KitKat Crisp Wafer in Milk Chocolate",
+    "brand": "Nestlé / Hershey's",
+    "category": "chocolate_wafer",
+    "aliases": [
+      "kitkat",
+      "kit kat",
+      "kit-kat",
+      "kitkat 4 finger",
+      "kitkat mini"
+    ],
+    "visual_cues": "Bright red wrapper with angled white oval logo reading 'KitKat' in red and brown chocolate wafer fingers.",
+    "verified_ingredients": [
+      "Sugar",
+      "Wheat flour",
+      "Skim milk",
+      "Cocoa butter",
+      "Cocoa mass",
+      "Vegetable oils (Palm, Shea)",
+      "Butterfat (Milk)",
+      "Lactose and proteins from whey (Milk)",
+      "Fat-reduced cocoa powder",
+      "Emulsifier (Lecithins - Soy/Sunflower)",
+      "Yeast",
+      "Raising agent (Sodium bicarbonate)"
+    ],
+    "allergens": [
+      "wheat",
+      "gluten",
+      "milk",
+      "dairy",
+      "lactose",
+      "soy"
+    ],
+    "allergen_warnings": [
+      "May contain peanuts and tree nuts"
+    ],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "wheat": ["Wheat flour"],
+      "gluten": ["Wheat flour"],
+      "milk": ["Skim milk", "Butterfat (Milk)", "Lactose and proteins from whey (Milk)"],
+      "dairy": ["Skim milk", "Butterfat (Milk)", "Lactose and proteins from whey (Milk)"],
+      "lactose": ["Lactose and proteins from whey (Milk)", "Skim milk", "Butterfat (Milk)"],
+      "soy": ["Emulsifier (Lecithins - Soy/Sunflower)"],
+      "peanuts": ["May contain peanuts (cross-contact warning)"],
+      "tree_nuts": ["May contain tree nuts (cross-contact warning)"],
+      "nuts": ["May contain peanuts and tree nuts (cross-contact warning)"],
+      "vegan": ["Skim milk", "Butterfat (Milk)", "Lactose and proteins from whey (Milk)"]
+    }
+  },
+  {
+    "product_id": "twix-original",
+    "name": "Twix Caramel Cookie Bars",
+    "brand": "Mars Wrigley",
+    "category": "chocolate_bar",
+    "aliases": [
+      "twix",
+      "twix bar",
+      "twix left",
+      "twix right",
+      "twix mini"
+    ],
+    "visual_cues": "Shiny metallic gold wrapper with red 'TWIX' lettering and two pause-mark dots inside the X.",
+    "verified_ingredients": [
+      "Milk chocolate (Sugar, Cocoa butter, Chocolate, Skim milk, Lactose, Milkfat, Soy lecithin, PGPR)",
+      "Enriched wheat flour (Wheat flour, Niacin, Reduced iron, Thiamine mononitrate, Riboflavin, Folic acid)",
+      "Sugar",
+      "Palm oil",
+      "Corn syrup",
+      "Skim milk",
+      "Dextrose",
+      "Salt",
+      "Cocoa powder",
+      "Soy lecithin",
+      "Modified corn starch",
+      "Baking soda",
+      "Artificial flavor"
+    ],
+    "allergens": [
+      "wheat",
+      "gluten",
+      "milk",
+      "dairy",
+      "lactose",
+      "soy"
+    ],
+    "allergen_warnings": [
+      "May contain peanuts"
+    ],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "wheat": ["Enriched wheat flour"],
+      "gluten": ["Enriched wheat flour"],
+      "milk": ["Skim milk", "Lactose", "Milkfat"],
+      "dairy": ["Skim milk", "Lactose", "Milkfat"],
+      "lactose": ["Lactose", "Skim milk", "Milkfat"],
+      "soy": ["Soy lecithin"],
+      "peanuts": ["May contain peanuts (cross-contact warning)"],
+      "nuts": ["May contain peanuts (cross-contact warning)"],
+      "vegan": ["Skim milk", "Lactose", "Milkfat"]
+    }
+  },
+  {
+    "product_id": "oreo-original",
+    "name": "Oreo Original Chocolate Sandwich Cookies",
+    "brand": "Mondelez / Nabisco",
+    "category": "cookie",
+    "aliases": [
+      "oreo",
+      "oreos",
+      "oreo original",
+      "oreo cookies",
+      "oreo mini"
+    ],
+    "visual_cues": "Blue wrapper with white 'OREO' logo and dark chocolate sandwich cookie splashing into milk.",
+    "verified_ingredients": [
+      "Unbleached enriched flour (Wheat flour, Niacin, Reduced iron, Thiamine mononitrate, Riboflavin, Folic acid)",
+      "Sugar",
+      "Palm and/or canola oil",
+      "Cocoa (processed with alkali)",
+      "High fructose corn syrup",
+      "Leavening (Baking soda and/or calcium phosphate)",
+      "Salt",
+      "Soy lecithin",
+      "Chocolate",
+      "Artificial flavor (Vanillin)"
+    ],
+    "allergens": [
+      "wheat",
+      "gluten",
+      "soy"
+    ],
+    "allergen_warnings": [
+      "May contain traces of milk (shared equipment in some regions)"
+    ],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "wheat": ["Unbleached enriched flour (Wheat flour)"],
+      "gluten": ["Unbleached enriched flour (Wheat flour)"],
+      "soy": ["Soy lecithin"]
+    }
+  },
+  {
+    "product_id": "sour-patch-kids",
+    "name": "Sour Patch Kids Original",
+    "brand": "Mondelez",
+    "category": "gummy_candy",
+    "aliases": [
+      "sour patch kids",
+      "sour patch",
+      "sourpatch kids"
+    ],
+    "visual_cues": "Bright yellow and green wrapper with 'SOUR PATCH KIDS' logo and colourful sugar-coated kid-shaped gummies.",
+    "verified_ingredients": [
+      "Sugar",
+      "Invert sugar",
+      "Corn syrup",
+      "Modified corn starch",
+      "Contains less than 2% of Tartaric acid, Citric acid, Natural and artificial flavor",
+      "Yellow 6",
+      "Red 40",
+      "Yellow 5",
+      "Blue 1"
+    ],
+    "allergens": [],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": true,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "sugar_free": ["Sugar", "Invert sugar", "Corn syrup"]
+    }
+  },
+  {
+    "product_id": "maoam-bloxx",
+    "name": "Maoam Bloxx Fruit Chews",
+    "brand": "Haribo / Maoam",
+    "category": "chewy_candy",
+    "aliases": [
+      "maoam",
+      "maoam bloxx",
+      "maoam happy fruttis",
+      "maoam stripes",
+      "maoam pinballs"
+    ],
+    "visual_cues": "Colorful wrapper with yellow-and-green 'MAOAM' logo and green cartoon fruit character.",
+    "verified_ingredients": [
+      "Sugar",
+      "Glucose syrup",
+      "Palm fat",
+      "Humectant (Sorbitol syrup)",
+      "Gelatin (Pork-derived)",
+      "Citric acid",
+      "Flavoring"
+    ],
+    "allergens": [],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": false,
+      "contains_gelatin": true,
+      "contains_pork": true,
+      "contains_beeswax": false,
+      "halal_friendly": false,
+      "kosher_friendly": false,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "vegan": ["Gelatin (Pork-derived)"],
+      "vegetarian": ["Gelatin (Pork-derived)"],
+      "no_gelatin": ["Gelatin (Pork-derived)"],
+      "gelatin": ["Gelatin (Pork-derived)"],
+      "pork": ["Gelatin (Pork-derived)"],
+      "halal": ["Gelatin (Pork-derived)"],
+      "kosher": ["Gelatin (Pork-derived)"]
+    }
+  },
+  {
+    "product_id": "kinder-bueno",
+    "name": "Kinder Bueno Milk Chocolate & Hazelnut Bar",
+    "brand": "Ferrero",
+    "category": "chocolate_wafer",
+    "aliases": [
+      "kinder bueno",
+      "kinder",
+      "bueno",
+      "kinder bueno mini"
+    ],
+    "visual_cues": "White and red wrapper with 'Kinder' in black/red and 'bueno' in cursive, showing chocolate wafer with creamy hazelnut center.",
+    "verified_ingredients": [
+      "Milk chocolate 31.5% (Sugar, Cocoa butter, Cocoa mass, Skimmed milk powder, Concentrated butter, Emulsifier: Lecithins (Soy), Vanillin)",
+      "Sugar",
+      "Palm oil",
+      "Wheat flour",
+      "Hazelnuts (10.8%)",
+      "Skimmed milk powder",
+      "Whole milk powder",
+      "Chocolate (Sugar, Cocoa mass, Cocoa butter, Emulsifier: Lecithins (Soy), Vanillin)",
+      "Fat-reduced cocoa",
+      "Emulsifier: Lecithins (Soy)",
+      "Raising agents (Sodium bicarbonate, Ammonium bicarbonate)",
+      "Salt",
+      "Vanillin"
+    ],
+    "allergens": [
+      "tree_nuts",
+      "hazelnuts",
+      "milk",
+      "dairy",
+      "lactose",
+      "wheat",
+      "gluten",
+      "soy"
+    ],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "tree_nuts": ["Hazelnuts (10.8%)"],
+      "nuts": ["Hazelnuts (10.8%)"],
+      "hazelnuts": ["Hazelnuts (10.8%)"],
+      "milk": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"],
+      "dairy": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"],
+      "lactose": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"],
+      "wheat": ["Wheat flour"],
+      "gluten": ["Wheat flour"],
+      "soy": ["Emulsifier: Lecithins (Soy)"],
+      "vegan": ["Skimmed milk powder", "Whole milk powder", "Concentrated butter"]
+    }
+  },
+  {
+    "product_id": "katjes-yoghurt-gums",
+    "name": "Katjes Yoghurt-Gums (Veggie)",
+    "brand": "Katjes",
+    "category": "gummy_candy",
+    "aliases": [
+      "katjes",
+      "katjes yoghurt-gums",
+      "katjes yoghurt gums",
+      "yoghurt gums"
+    ],
+    "visual_cues": "Pink and white bag with red 'Katjes' logo, green 'Veggie / Ohne Tierische Gelatine' badge, and fruit-and-yogurt gummies.",
+    "verified_ingredients": [
+      "Sugar",
+      "Glucose syrup",
+      "Skimmed milk yoghurt powder (5.5%)",
+      "Apple puree",
+      "Gelling agent (Pectins)",
+      "Acids (Citric acid, Malic acid, Lactic acid)",
+      "Hydrolysed milk protein",
+      "Fruit and plant concentrates (red potato, safflower, radish, apple, lemon, blackcurrant)",
+      "Natural flavorings",
+      "Vegetable oil (Sunflower)",
+      "Glazing agent (Carnauba wax)"
+    ],
+    "allergens": [
+      "milk",
+      "dairy",
+      "lactose"
+    ],
+    "allergen_warnings": [],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "milk": ["Skimmed milk yoghurt powder (5.5%)", "Hydrolysed milk protein"],
+      "dairy": ["Skimmed milk yoghurt powder (5.5%)", "Hydrolysed milk protein"],
+      "lactose": ["Skimmed milk yoghurt powder (5.5%)", "Hydrolysed milk protein"],
+      "vegan": ["Skimmed milk yoghurt powder (5.5%)", "Hydrolysed milk protein"]
+    }
+  },
+  {
+    "product_id": "trolli-sour-glowworms",
+    "name": "Trolli Sour Brite Crawlers (Sour Glowworms)",
+    "brand": "Trolli",
+    "category": "gummy_candy",
+    "aliases": [
+      "trolli",
+      "trolli sour glowworms",
+      "trolli sour brite crawlers",
+      "trolli gummy worms",
+      "sour glowworms"
+    ],
+    "visual_cues": "Blue/neon bag with red-and-yellow 'Trolli' logo and two-tone neon sugar-dusted gummy worms.",
+    "verified_ingredients": [
+      "Corn syrup",
+      "Sugar",
+      "Gelatin (Pork/Beef-derived)",
+      "Modified food starch (corn)",
+      "Fumaric acid",
+      "Lactic acid",
+      "Citric acid",
+      "Sodium citrate",
+      "Calcium lactate",
+      "Sodium lactate",
+      "Natural and artificial flavors",
+      "Titanium dioxide",
+      "Red 40",
+      "Yellow 5",
+      "Yellow 6",
+      "Blue 1"
+    ],
+    "allergens": [],
+    "allergen_warnings": [
+      "Processed in a facility that also processes milk, soy, wheat, and peanuts"
+    ],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": false,
+      "contains_gelatin": true,
+      "contains_pork": true,
+      "contains_beeswax": false,
+      "halal_friendly": false,
+      "kosher_friendly": false,
+      "gluten_free": true
+    },
+    "conflict_triggers": {
+      "vegan": ["Gelatin (Pork/Beef-derived)"],
+      "vegetarian": ["Gelatin (Pork/Beef-derived)"],
+      "no_gelatin": ["Gelatin (Pork/Beef-derived)"],
+      "gelatin": ["Gelatin (Pork/Beef-derived)"],
+      "pork": ["Gelatin (Pork/Beef-derived)"],
+      "halal": ["Gelatin (Pork/Beef-derived)"],
+      "kosher": ["Gelatin (Pork/Beef-derived)"]
+    }
+  },
+  {
+    "product_id": "milky-way-original",
+    "name": "Milky Way Chocolate & Caramel Bar",
+    "brand": "Mars Wrigley",
+    "category": "chocolate_bar",
+    "aliases": [
+      "milky way",
+      "milkyway",
+      "milky way bar",
+      "milky way mini"
+    ],
+    "visual_cues": "Dark brown/green or starry blue wrapper with white-and-gold 'Milky Way' script logo.",
+    "verified_ingredients": [
+      "Milk chocolate (Sugar, Cocoa butter, Skim milk, Chocolate, Lactose, Milkfat, Soy lecithin, Artificial flavor)",
+      "Corn syrup",
+      "Sugar",
+      "Palm oil",
+      "Skim milk",
+      "Milkfat",
+      "Cocoa powder processed with alkali",
+      "Barley malt extract",
+      "Lactose",
+      "Salt",
+      "Egg whites",
+      "Chocolate",
+      "Artificial flavor"
+    ],
+    "allergens": [
+      "milk",
+      "dairy",
+      "lactose",
+      "eggs",
+      "soy",
+      "barley",
+      "gluten"
+    ],
+    "allergen_warnings": [
+      "May contain peanuts"
+    ],
+    "dietary_flags": {
+      "vegan": false,
+      "vegetarian": true,
+      "contains_gelatin": false,
+      "contains_pork": false,
+      "contains_beeswax": false,
+      "halal_friendly": true,
+      "kosher_friendly": true,
+      "gluten_free": false
+    },
+    "conflict_triggers": {
+      "milk": ["Skim milk", "Lactose", "Milkfat"],
+      "dairy": ["Skim milk", "Lactose", "Milkfat"],
+      "lactose": ["Lactose", "Skim milk", "Milkfat"],
+      "eggs": ["Egg whites"],
+      "soy": ["Soy lecithin"],
+      "gluten": ["Barley malt extract"],
+      "barley": ["Barley malt extract"],
+      "peanuts": ["May contain peanuts (cross-contact warning)"],
+      "nuts": ["May contain peanuts (cross-contact warning)"],
+      "vegan": ["Skim milk", "Lactose", "Milkfat", "Egg whites"]
+    }
+  }
+]

@@ -1,0 +1,424 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Candy or Curse? API",
+    "version": "1.0.0",
+    "description": "Halloween AI Candy Scanner API powered by Gemma 4 Vision, ElevenLabs Voice, and a Verified Ingredient Classification Engine."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local FastAPI development server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Backend status and API readiness"
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "List Verified Products",
+        "operationId": "listVerifiedProducts",
+        "responses": {
+          "200": {
+            "description": "List of 15 verified candy products"
+          }
+        }
+      }
+    },
+    "/api/sessions": {
+      "post": {
+        "summary": "Create a Session with Dietary Restrictions",
+        "operationId": "createSession",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/{session_id}": {
+      "get": {
+        "summary": "Retrieve Session State and Preferences",
+        "operationId": "getSession",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session state including QR scan history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "404": { "description": "Session not found" }
+        }
+      }
+    },
+    "/api/sessions/{session_id}/chat": {
+      "post": {
+        "summary": "Communicate with The Candy Keeper (Gemma 4)",
+        "operationId": "chatWithSession",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Candy Keeper reply and updated dietary profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions/{session_id}/scan": {
+      "post": {
+        "summary": "Upload a Candy Image and Get GREEN/RED/YELLOW Classification",
+        "operationId": "scanCandy",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "demo_product_hint",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": { "type": "string", "format": "binary" },
+                  "demo_product_hint": { "type": "string" }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanBase64Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Classification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/transcribe": {
+      "post": {
+        "summary": "ElevenLabs Speech-to-Text Transcription (scribe_v1)",
+        "operationId": "transcribeVoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["audio"],
+                "properties": {
+                  "audio": { "type": "string", "format": "binary" },
+                  "language_code": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transcribed text",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscribeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/synthesize": {
+      "post": {
+        "summary": "ElevenLabs Speech Generation (eleven_flash_v2_5)",
+        "operationId": "synthesizeVoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SynthesizeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Base64 MP3 audio payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SynthesizeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClassificationStatus": {
+        "type": "string",
+        "enum": ["GREEN", "RED", "YELLOW"]
+      },
+      "IdentificationStatus": {
+        "type": "string",
+        "enum": ["IDENTIFIED", "AMBIGUOUS", "UNKNOWN"]
+      },
+      "IngredientSource": {
+        "type": "string",
+        "enum": ["VERIFIED_DATABASE", "UNVERIFIED_FALLBACK", "NONE"]
+      },
+      "DietaryProfile": {
+        "type": "object",
+        "required": ["allergies", "dietary_preferences", "raw_notes", "parsed_restrictions"],
+        "properties": {
+          "allergies": { "type": "array", "items": { "type": "string" } },
+          "dietary_preferences": { "type": "array", "items": { "type": "string" } },
+          "raw_notes": { "type": "string" },
+          "parsed_restrictions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ChatMessage": {
+        "type": "object",
+        "required": ["role", "content", "timestamp"],
+        "properties": {
+          "role": { "type": "string" },
+          "content": { "type": "string" },
+          "timestamp": { "type": "string" }
+        }
+      },
+      "RecognizedProduct": {
+        "type": "object",
+        "required": ["name", "confidence", "visual_evidence"],
+        "properties": {
+          "product_id": { "type": ["string", "null"] },
+          "name": { "type": "string" },
+          "brand": { "type": ["string", "null"] },
+          "category": { "type": ["string", "null"] },
+          "confidence": { "type": "number" },
+          "visual_evidence": { "type": "string" }
+        }
+      },
+      "UncertaintyInfo": {
+        "type": "object",
+        "required": ["is_uncertain", "confidence_score", "reasons"],
+        "properties": {
+          "is_uncertain": { "type": "boolean" },
+          "confidence_score": { "type": "number" },
+          "reasons": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ScanResult": {
+        "type": "object",
+        "required": [
+          "scan_id",
+          "session_id",
+          "timestamp",
+          "recognized_product",
+          "identification_status",
+          "ingredient_source",
+          "classification",
+          "headline",
+          "conflicting_ingredients",
+          "verified_ingredients",
+          "allergen_warnings",
+          "explanation",
+          "keeper_spoken_summary",
+          "uncertainty",
+          "safety_disclaimer"
+        ],
+        "properties": {
+          "scan_id": { "type": "string" },
+          "session_id": { "type": "string" },
+          "timestamp": { "type": "string" },
+          "recognized_product": { "$ref": "#/components/schemas/RecognizedProduct" },
+          "identification_status": { "$ref": "#/components/schemas/IdentificationStatus" },
+          "ingredient_source": { "$ref": "#/components/schemas/IngredientSource" },
+          "classification": { "$ref": "#/components/schemas/ClassificationStatus" },
+          "headline": { "type": "string" },
+          "conflicting_ingredients": { "type": "array", "items": { "type": "string" } },
+          "verified_ingredients": { "type": "array", "items": { "type": "string" } },
+          "allergen_warnings": { "type": "array", "items": { "type": "string" } },
+          "explanation": { "type": "string" },
+          "keeper_spoken_summary": { "type": "string" },
+          "uncertainty": { "$ref": "#/components/schemas/UncertaintyInfo" },
+          "safety_disclaimer": { "type": "string" }
+        }
+      },
+      "CreateSessionRequest": {
+        "type": "object",
+        "properties": {
+          "initial_message": { "type": ["string", "null"] },
+          "allergies": { "type": "array", "items": { "type": "string" } },
+          "dietary_preferences": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "SessionResponse": {
+        "type": "object",
+        "required": [
+          "session_id",
+          "created_at",
+          "mobile_scan_path",
+          "mobile_scan_url",
+          "dietary_profile",
+          "chat_history",
+          "scan_history"
+        ],
+        "properties": {
+          "session_id": { "type": "string" },
+          "created_at": { "type": "string" },
+          "mobile_scan_path": { "type": "string" },
+          "mobile_scan_url": { "type": "string" },
+          "dietary_profile": { "$ref": "#/components/schemas/DietaryProfile" },
+          "chat_history": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ChatMessage" }
+          },
+          "scan_history": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ScanResult" }
+          },
+          "latest_scan": {
+            "anyOf": [{ "$ref": "#/components/schemas/ScanResult" }, { "type": "null" }]
+          }
+        }
+      },
+      "ChatRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": { "type": "string" }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "required": ["session_id", "reply", "updated_dietary_profile", "extracted_new_restrictions"],
+        "properties": {
+          "session_id": { "type": "string" },
+          "reply": { "type": "string" },
+          "updated_dietary_profile": { "$ref": "#/components/schemas/DietaryProfile" },
+          "extracted_new_restrictions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ScanBase64Request": {
+        "type": "object",
+        "required": ["image_base64"],
+        "properties": {
+          "image_base64": { "type": "string" },
+          "mime_type": { "type": "string" },
+          "demo_product_hint": { "type": ["string", "null"] }
+        }
+      },
+      "TranscribeResponse": {
+        "type": "object",
+        "required": ["text", "language_code", "provider"],
+        "properties": {
+          "text": { "type": "string" },
+          "language_code": { "type": "string" },
+          "provider": { "type": "string" }
+        }
+      },
+      "SynthesizeRequest": {
+        "type": "object",
+        "required": ["text"],
+        "properties": {
+          "text": { "type": "string" },
+          "voice_id": { "type": ["string", "null"] }
+        }
+      },
+      "SynthesizeResponse": {
+        "type": "object",
+        "required": ["audio_base64", "mime_type", "provider"],
+        "properties": {
+          "audio_base64": { "type": "string" },
+          "mime_type": { "type": "string" },
+          "provider": { "type": "string" }
+        }
+      }
+    }
+  }
+}
