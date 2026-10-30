@@ -239,3 +239,32 @@ def test_rejected_label_cannot_fall_back_to_catalog_recipe(monkeypatch):
     assert product.product_id is None and not ingredients
     result = classify_product_for_session('test', product, status, DietaryProfile(), reasons, ingredients)
     assert result.classification == ClassificationStatus.YELLOW
+
+
+def test_vertex_transport_preserves_image_system_prompt_and_response_format(monkeypatch):
+    from google.genai import types
+    monkeypatch.setattr(vision.settings, 'GEMINI_API_KEY', 'AQ.test-not-a-real-key')
+    monkeypatch.setattr(vision.settings, 'GEMMA_MODEL', 'gemma-4-26b-a4b-it')
+    class AsyncClient:
+        models = None
+        def __init__(self): self.models = self
+        async def __aenter__(self): return self
+        async def __aexit__(self, *args): pass
+        async def generate_content(self, **kwargs):
+            assert kwargs['model'] == 'gemini-2.5-flash'
+            assert kwargs['contents'][0].parts[0].inline_data.data == b'image'
+            assert kwargs['config'].thinking_config.thinking_budget == 0
+            assert kwargs['config'].system_instruction is not None
+            return types.GenerateContentResponse.model_validate({'candidates': [{
+                'finishReason': 'STOP', 'content': {'parts': [{'text': '{"ok":true}'}]}}]})
+    class Client:
+        def __init__(self, **kwargs):
+            assert kwargs['vertexai'] is True
+            self.aio = AsyncClient()
+    monkeypatch.setattr(vision.genai, 'Client', Client)
+    response = asyncio.run(vision._generate({
+        'contents': [{'role': 'user', 'parts': [
+            {'inline_data': {'data': 'aW1hZ2U=', 'mime_type': 'image/jpeg'}}, {'text': 'Read label'}]}],
+        'systemInstruction': {'parts': [{'text': 'Do not invent ingredients.'}]},
+    }))
+    assert vision._response_text(response) == '{"ok":true}'

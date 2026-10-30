@@ -112,3 +112,19 @@ Validation on the combined branch:
 
 These checks do not replace a real phone/camera/QR/ElevenLabs end-to-end rehearsal.
 Live provider testing and broader photo testing remain for the later test session.
+
+
+## Concurrent integration update preserved
+
+During publication, main advanced to aba26a8 and all feature branches advanced to
+c9c70b4. Merged the latest main without overwriting those commits. Preserved their
+QR/tunnel changes and Vertex Express support while retaining B1's guardrails.
+Vertex calls now use the async SDK, response parsing and the bounded retry path;
+the inherited Gemma-to-gemini-2.5-flash fallback for Vertex keys remains in place.
+AI Studio keys continue to use the tested Gemma REST path. Vertex compatibility
+has a mocked transport test; it has not been validated with a live Vertex key.
+
+Final combined validation: 27 backend tests pass; TypeScript/Vite production build
+passes. Full camera, phone QR, live voice and provider reliability tests are deferred
+to the team's later end-to-end session. The previously reported static smoke tests
+remain deterministic checks, not proof of a real-device end-to-end pass.

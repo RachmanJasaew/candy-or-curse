@@ -16,6 +16,15 @@ async def main():
     if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY.startswith('your_'):
         print('Set GEMINI_API_KEY in backend/.env first.')
         return 1
+    if settings.GEMINI_API_KEY.startswith('AQ.'):
+        from app.services.gemma_service import _generate, _response_text
+        try:
+            data = await _generate({'contents': [{'parts': [{'text': 'Say hello.'}]}]})
+            print('Vertex live text received:', bool(_response_text(data)))
+            return 0
+        except Exception as exc:
+            print('Vertex check failed:', type(exc).__name__)
+            return 1
     headers = {'x-goog-api-key': settings.GEMINI_API_KEY}
     base = 'https://generativelanguage.googleapis.com/v1beta'
     async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=10.0)) as client:

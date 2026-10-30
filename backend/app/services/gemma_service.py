@@ -18,6 +18,8 @@ import math
 import re
 from typing import Any, Optional
 import httpx
+from google import genai
+from google.genai import types
 
 from app.config import settings
 from app.models.schemas import (
@@ -117,6 +119,8 @@ async def _generate(payload: dict[str, Any]) -> dict[str, Any]:
 
 async def _generate_request(payload: dict[str, Any]) -> dict[str, Any]:
     """One bounded retry for transient provider errors; no credential-bearing logs."""
+    if settings.GEMINI_API_KEY.startswith("AQ."):
+        return await _vertex_generate(payload)
     url = ("https://generativelanguage.googleapis.com/v1beta/models/"
            f"{settings.GEMMA_MODEL}:generateContent")
     async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=10.0)) as client:
@@ -133,6 +137,45 @@ async def _generate_request(payload: dict[str, Any]) -> dict[str, Any]:
                     raise
                 await asyncio.sleep(0.5)
     raise RuntimeError("No model response")
+
+
+async def _vertex_generate(payload: dict[str, Any]) -> dict[str, Any]:
+    """Preserve Team B2's Vertex Express support without blocking FastAPI."""
+    model = ("gemini-2.5-flash" if settings.GEMMA_MODEL.startswith("gemma")
+             else settings.GEMMA_MODEL)
+    contents = []
+    for content in payload["contents"]:
+        parts = []
+        for part in content["parts"]:
+            if "text" in part:
+                parts.append(types.Part.from_text(text=part["text"]))
+            elif "inline_data" in part:
+                inline = part["inline_data"]
+                parts.append(types.Part.from_bytes(
+                    data=base64.b64decode(inline["data"]), mime_type=inline["mime_type"]))
+        contents.append(types.Content(role=content.get("role", "user"), parts=parts))
+    generation = payload.get("generationConfig", {})
+    options = {"temperature": generation.get("temperature", 0.1),
+               "max_output_tokens": generation.get("maxOutputTokens", 1200)}
+    if model.startswith("gemini-2.5"):
+        options["thinking_config"] = types.ThinkingConfig(thinking_budget=0)
+    if payload.get("systemInstruction"):
+        options["system_instruction"] = payload["systemInstruction"]
+    client = genai.Client(vertexai=True, api_key=settings.GEMINI_API_KEY,
+                         http_options=types.HttpOptions(timeout=90000,
+                             retry_options=types.HttpRetryOptions(attempts=1)))
+    async with client.aio as async_client:
+        for attempt in range(2):
+            try:
+                result = await async_client.models.generate_content(
+                    model=model, contents=contents,
+                    config=types.GenerateContentConfig(**options))
+                return result.model_dump(mode="json", by_alias=True, exclude_none=True)
+            except Exception as exc:
+                if attempt or getattr(exc, "code", None) not in {429, 500, 502, 503, 504}:
+                    raise
+                await asyncio.sleep(0.5)
+    raise RuntimeError("No Vertex response")
 
 
 async def _verify_ocr(image_bytes: bytes, mime_type: str, ingredients: list[str]) -> bool:
