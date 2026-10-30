@@ -158,7 +158,7 @@ def test_eat_everything_preference_allows_all_verified_products() -> None:
     assert scan_resp.json()["classification"] == "GREEN"
 
 
-def test_voice_endpoints_mock_fallback() -> None:
+def test_voice_output_fallback_and_unavailable_input() -> None:
     synth_resp = client.post(
         "/api/voice/synthesize",
         json={"text": "Okay, turn it around. Let me see the ingredients!"},
@@ -170,5 +170,5 @@ def test_voice_endpoints_mock_fallback() -> None:
         "/api/voice/transcribe",
         files={"audio": ("speech.webm", b"dummy_webm_audio_bytes", "audio/webm")},
     )
-    assert transcribe_resp.status_code == 200
-    assert len(transcribe_resp.json()["text"]) > 0
+    assert transcribe_resp.status_code == 503
+    assert "text" not in transcribe_resp.json()
