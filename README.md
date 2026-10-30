@@ -1,5 +1,6 @@
 # 🎃 Candy or Curse? — Live AI Food & Halloween Candy Scanner
 
+> 🌐 **Live Lovable App (Team A1):** **[https://pixel-perfect-replay-80513.lovable.app](https://pixel-perfect-replay-80513.lovable.app)**
 > 👉 **NEW TEAMMATES: Read [START_HERE.md](START_HERE.md) first for your exact branch, commands, and GitHub issues!**
 
 **Candy or Curse?** is an interactive AI food & candy scanner built with **Gemma 4 Vision**, **ElevenLabs Voice (`scribe_v1` & `eleven_flash_v2_5`)**, **Lovable (React + TypeScript)**, and **Python FastAPI**.

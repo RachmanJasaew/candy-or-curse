@@ -27,4 +27,4 @@ PYTHONPATH=. python -m pytest -v
 
 echo "🚀 Starting Candy or Curse FastAPI Backend on http://0.0.0.0:8000 ..."
 echo "👉 Interactive Swagger UI: http://localhost:8000/docs"
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --env-file .env

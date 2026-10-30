@@ -35,7 +35,7 @@ class Settings:
     BACKEND_HOST: str = os.getenv("BACKEND_HOST", "0.0.0.0")
     BACKEND_PORT: int = int(os.getenv("BACKEND_PORT", "8000"))
     PUBLIC_FRONTEND_URL: str = os.getenv(
-        "PUBLIC_FRONTEND_URL", "https://candy-or-curse.lovable.app"
+        "PUBLIC_FRONTEND_URL", "https://pixel-perfect-replay-80513.lovable.app"
     ).rstrip("/")
     CORS_ORIGINS: list[str] = [
         origin.strip()

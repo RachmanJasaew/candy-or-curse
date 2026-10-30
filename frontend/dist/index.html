@@ -254,11 +254,11 @@
       }
 
       const restrictions = state.session.dietary_profile?.parsed_restrictions || [];
-      const originToUse =
-        window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-          ? "https://2787a37f45ccde.lhr.life"
-          : window.location.origin;
-      const qrUrl = `${originToUse}/scan/${state.session.session_id}`;
+      const qrUrl =
+        (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
+        state.session.mobile_scan_url
+          ? state.session.mobile_scan_url
+          : `${window.location.origin}/scan/${state.session.session_id}`;
       const latestScan = state.session.latest_scan;
 
       const modeSwitchBtn = state.mode === "desktop"
@@ -502,7 +502,9 @@
             const newScanId = updated?.latest_scan?.scan_id;
             const oldCount = (state.session?.chat_history || []).length;
             const newCount = (updated?.chat_history || []).length;
-            if (oldScanId !== newScanId || oldCount !== newCount) {
+            const oldUrl = state.session?.mobile_scan_url;
+            const newUrl = updated?.mobile_scan_url;
+            if (oldScanId !== newScanId || oldCount !== newCount || oldUrl !== newUrl) {
               state.session = updated;
               render();
             }

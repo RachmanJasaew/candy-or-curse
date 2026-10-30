@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 from typing import Optional
 import uuid
 
@@ -15,6 +16,22 @@ from app.models.schemas import (
 from app.services.classifier import build_dietary_profile
 
 PERSIST_PATH = Path(__file__).resolve().parent.parent.parent / "tmp" / "sessions.json"
+TUNNEL_LOG_PATH = Path(
+    "/Users/rachmanjasaew/.gemini/antigravity/brain/b0de59da-2240-4856-a40d-07869c96a65e/.system_generated/tasks/task-238.log"
+)
+
+
+def get_live_public_url() -> str:
+    """Return the latest active HTTPS tunnel URL (auto-detecting localhost.run rotations)."""
+    try:
+        if TUNNEL_LOG_PATH.exists():
+            text = TUNNEL_LOG_PATH.read_text(encoding="utf-8", errors="ignore")
+            matches = re.findall(r"https://[a-z0-9]+\.lhr\.life", text)
+            if matches:
+                return matches[-1]
+    except Exception:
+        pass
+    return settings.PUBLIC_FRONTEND_URL
 
 
 class SessionStore:
@@ -55,7 +72,7 @@ class SessionStore:
         )
 
         mobile_scan_path = f"/scan/{session_id}"
-        mobile_scan_url = f"{settings.PUBLIC_FRONTEND_URL}{mobile_scan_path}"
+        mobile_scan_url = f"{get_live_public_url()}{mobile_scan_path}"
 
         restrictions_summary = (
             ", ".join(profile.parsed_restrictions)
@@ -89,7 +106,10 @@ class SessionStore:
         return session
 
     def get_session(self, session_id: str) -> Optional[SessionResponse]:
-        return self._sessions.get(session_id)
+        sess = self._sessions.get(session_id)
+        if sess:
+            sess.mobile_scan_url = f"{get_live_public_url()}{sess.mobile_scan_path}"
+        return sess
 
     def replace_preferences(
         self,
@@ -145,8 +165,9 @@ class SessionStore:
             session.dietary_profile = build_dietary_profile(
                 allergies=merged_allergies,
                 dietary_preferences=merged_prefs,
-                raw_notes=combined_notes,
+                raw_notes="",
             )
+            session.dietary_profile.raw_notes = combined_notes
 
         session.chat_history.append(
             ChatMessage(role="user", content=user_message, timestamp=now_iso)
