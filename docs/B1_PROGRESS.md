@@ -1,7 +1,7 @@
 # B1 implementation and verification
 
-Branch: `feature/gemma-vision`. Changes are local; no push or PR has been made.
-The shared API models, catalog, classifier, endpoints, and frontend were not changed.
+Branch: `feature/gemma-vision`. Prepared for publication and review; main is not modified by this branch.
+The shared API models, catalog, classifier and endpoints are unchanged by B1. Integration adds only Vite environment type declarations to the frontend.
 
 ## Implemented
 
@@ -92,3 +92,23 @@ coaching, positive label OCR with verification, rejection of incomplete OCR, and
 conversational restriction extraction. Wider phone-photo testing and B2 integration
 risks above remain. Earlier negative OCR results in this document are retained as
 limitations and motivation for the final safeguards, rather than positive evidence.
+
+
+## Integration with A1/B2 main
+
+Rebased onto origin/main at 8092dab, including A1 UI and B2's expanded 20-product
+catalog, bilingual classifier, persistent sessions, and backend-served UI. The A2
+voice-qr branch was still at the original scaffold when fetched. Vision catalog
+counts now follow the database dynamically.
+
+Validation on the combined branch:
+- 26 backend tests pass with live API keys disabled.
+- TypeScript and Vite production build pass. Added src/vite-env.d.ts to resolve
+  missing ImportMeta.env declarations in the existing frontend.
+- Deterministic integration smoke passed: desktop/mobile HTML, session creation,
+  RED and YELLOW scan responses, and latest-scan session polling.
+- Production build output was directed to a temporary directory so the existing
+  backend-served frontend/dist/index.html was preserved.
+
+These checks do not replace a real phone/camera/QR/ElevenLabs end-to-end rehearsal.
+Live provider testing and broader photo testing remain for the later test session.
